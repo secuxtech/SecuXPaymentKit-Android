@@ -24,6 +24,13 @@ android {
         }
     }
 
+    packagingOptions {
+
+        exclude 'res/values/values.xml'
+        exclude 'AndroidManifest.xml'
+        exclude 'R.txt'
+        exclude 'classes.jar'
+    }
 }
 
 dependencies {
