@@ -14,9 +14,15 @@ import android.widget.Toast;
 
 import com.secuxtech.paymentkit.*;
 
+import java.util.ArrayList;
+import java.util.Map;
+
 public class MainActivity extends AppCompatActivity {
 
     private SecuXPaymentManager mPaymentManager = new SecuXPaymentManager();
+    private SecuXAccountManager mAccountManager = new SecuXAccountManager();
+    private SecuXAccount mAccount;
+
     private String mPaymentInfo = "{\"amount\":\"11\", \"coinType\":\"DCT\", \"deviceID\":\"4ab10000726b\"}";
     private final Context mContext = this;
 
@@ -36,6 +42,31 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
+
+                Map<String, Double> coinRate = mAccountManager.getCoinUSDRate();
+
+                //Create SecuX account
+                mAccount = new SecuXAccount("ifun-886-936105934-6", SecuXCoinType.DCT, "", "", "");
+
+                SecuXAccountBalance balance = new SecuXAccountBalance();
+                if (mAccountManager.getAccountBalance(mAccount, balance)){
+                    Log.i("secux-paymentkit-exp",
+                            "getAccountBalance done. balance= " + String.valueOf(balance.mFormatedBalance) + ", usdBalance=" + String.valueOf(balance.mUSDBalance));
+                }else{
+                    Log.i("secux-paymentkit-exp", "get account balance failed!");
+                }
+
+                ArrayList<SecuXAccountHisotry> historyList = new ArrayList<>();
+                if (mAccountManager.getAccountHistory(mAccount, historyList)){
+                    for(int i=0; i<historyList.size(); i++){
+                        SecuXAccountHisotry item = historyList.get(i);
+
+                        Log.i("secux-paymentkit-exp", item.timestamp + " " + item.tx_type + " "
+                                + item.formatted_amount + " " + item.amount_symbol + " $ " + item.amount_usd + " " + item.detailslUrl);
+                    }
+                }else{
+                    Log.i("secux-paymentkit-exp", "get account history failed!");
+                }
 
                 //Must set the callback for the SecuXPaymentManager
                 mPaymentManager.setSecuXPaymentManagerCallback(mPaymentMgrCallback);
@@ -72,24 +103,22 @@ public class MainActivity extends AppCompatActivity {
         //Called when payment status is changed. Payment status are: "Device connecting...", "DCT transferring..." and "Device verifying..."
         @Override
         public void updatePaymentStatus(final String status){
-            Log.i("secux-paymentkit-example", "Update payment status: " + status);
+            Log.i("secux-paymentkit-exp", "Update payment status: " + status);
         }
 
         //Called when get store information is completed. Returns store name and store logo.
         @Override
         public void getStoreInfoDone(final boolean ret, final String storeName, final Image storeLogo){
-            Log.i("secux-paymentkit-example", "Get store info. done ret=" + String.valueOf(ret) + ",name=" + storeName);
+            Log.i("secux-paymentkit-exp", "Get store info. done ret=" + String.valueOf(ret) + ",name=" + storeName);
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (ret){
                         final String name = storeName;
 
-                        //Create SecuX account
-                        SecuXAccount account = new SecuXAccount("ifun-886-936105934-6", SecuXCoinType.DCT, "", "", "");
 
                         //Use SecuXManager to do payment, must call in main thread
-                        mPaymentManager.doPayment(mContext, account, name, mPaymentInfo);
+                        mPaymentManager.doPayment(mContext, mAccount, name, mPaymentInfo);
 
                     }else{
                         Toast toast = Toast.makeText(mContext, "Get store info. failed!", Toast.LENGTH_LONG);
