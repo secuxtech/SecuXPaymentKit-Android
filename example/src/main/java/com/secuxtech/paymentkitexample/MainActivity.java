@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
@@ -108,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Called when get store information is completed. Returns store name and store logo.
         @Override
-        public void getStoreInfoDone(final boolean ret, final String storeName, final Image storeLogo){
+        public void getStoreInfoDone(final boolean ret, final String storeName, final Bitmap storeLogo){
             Log.i("secux-paymentkit-exp", "Get store info. done ret=" + String.valueOf(ret) + ",name=" + storeName);
             runOnUiThread(new Runnable() {
                 @Override

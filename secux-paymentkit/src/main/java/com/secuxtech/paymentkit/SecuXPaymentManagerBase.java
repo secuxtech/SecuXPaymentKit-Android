@@ -2,6 +2,8 @@ package com.secuxtech.paymentkit;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.util.Base64;
 import android.util.Log;
@@ -37,7 +39,7 @@ public class SecuXPaymentManagerBase {
     private PaymentInfo mPaymentInfo = new PaymentInfo();
     private SecuXAccount mAccount = null;
     private String mStoreName = "";
-    private Image mStoreLogo = null;
+    private Bitmap mStoreLogo = null;
 
 
     SecuXPaymentManagerBase(){
@@ -80,7 +82,13 @@ public class SecuXPaymentManagerBase {
                 String param = "{\"coinType\":\"" + mPaymentInfo.mCoinType + "\",\"id\":\"" + mPaymentInfo.mDevID + "\",\"type\":\"Device\"}";
                 JSONObject jsonParam = new JSONObject(param);
                 JSONObject storeInfoJson = new JSONObject(this.mSecuXSvrReqHandler.getAccountInfo(jsonParam));
-                mStoreName = storeInfoJson.getString("name").toString();
+                mStoreName = storeInfoJson.getString("name");
+
+                String base64String = storeInfoJson.getString("icon");
+                String base64Image = base64String.split(",")[1];
+                byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
+                mStoreLogo = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+
                 return true;
             }
         }catch (Exception e){
