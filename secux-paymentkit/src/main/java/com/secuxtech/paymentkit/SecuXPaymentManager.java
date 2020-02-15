@@ -27,4 +27,8 @@ public class SecuXPaymentManager extends SecuXPaymentManagerBase{
         this.mContext = context;
         doPayment(account, storeName, paymentInfo);
     }
+
+    public void cancelPayment(){
+        super.cancelPayment();
+    }
 }
