@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private SecuXAccountManager mAccountManager = new SecuXAccountManager();
     private SecuXAccount mAccount;
 
-    private String mPaymentInfo = "{\"amount\":\"11\", \"coinType\":\"DCT\", \"deviceID\":\"4ab10000726b\"}";
+    private String mPaymentInfo = "{\"amount\":\"11\", \"coinType\":\"LBR\", \"deviceID\":\"4ab10000726b\"}";
     private final Context mContext = this;
 
     @Override
@@ -47,12 +47,18 @@ public class MainActivity extends AppCompatActivity {
                 Map<String, Double> coinRate = mAccountManager.getCoinUSDRate();
 
                 //Create SecuX account
-                mAccount = new SecuXAccount("ifun-886-936105934-6", SecuXCoinType.DCT, "", "", "");
+                //mAccount = new SecuXAccount("ifun-886-936105934-6", SecuXCoinType.DCT, "", "", "");
+                mAccount = new SecuXAccount("Alice-Libra", SecuXCoinType.LBR, "", "842d1a7e65d0e7788564dc03ea4bbe4e15d57719003bee6981f1a6d765443822", "");
 
                 SecuXAccountBalance balance = new SecuXAccountBalance();
                 if (mAccountManager.getAccountBalance(mAccount, balance)){
+                    Double usdBalance = balance.mUSDBalance;
+                    if (balance.mUSDBalance==0 && coinRate!=null && coinRate.containsKey(mAccount.mCoinType)){
+                        usdBalance = balance.mFormatedBalance * coinRate.get(mAccount.mCoinType);
+                    }
+
                     Log.i("secux-paymentkit-exp",
-                            "getAccountBalance done. balance= " + String.valueOf(balance.mFormatedBalance) + ", usdBalance=" + String.valueOf(balance.mUSDBalance));
+                            "getAccountBalance done. balance= " + String.valueOf(balance.mFormatedBalance) + ", usdBalance=" + String.valueOf(usdBalance));
                 }else{
                     Log.i("secux-paymentkit-exp", "get account balance failed!");
                 }

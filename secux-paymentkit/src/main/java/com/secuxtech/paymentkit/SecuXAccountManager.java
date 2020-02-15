@@ -19,6 +19,9 @@ public class SecuXAccountManager {
             case SecuXCoinType.IFC:
                 return getDCTAccountBalance(account, balance);
 
+            case SecuXCoinType.LBR:
+                return getLBRAccountBalance(account, balance);
+
             default:
                 break;
 
@@ -32,6 +35,9 @@ public class SecuXAccountManager {
             case SecuXCoinType.DCT:
             case SecuXCoinType.IFC:
                 return getDCTAccountHistory(account, historyList);
+
+            case SecuXCoinType.LBR:
+                return getLBRAccountHistory(account, historyList);
 
             default:
                 break;
@@ -81,6 +87,25 @@ public class SecuXAccountManager {
         return false;
     }
 
+    private boolean getLBRAccountBalance(SecuXAccount account, SecuXAccountBalance balance){
+        if (account.mName.length()==0)
+            return false;
+
+        try{
+            JSONObject param = new JSONObject();
+            param.put("coinType", account.mCoinType.toString());
+            param.put("pubKey", account.mAddress);
+
+            String strRet = mSecuXSvrReqHandler.getAccountBalance(param);
+            return handleAccountBalanceData(strRet, balance);
+
+        }catch(Exception e){
+            Log.e("secux-paymentkit", e.getLocalizedMessage());
+        }
+
+        return false;
+    }
+
     private boolean getDCTAccountHistory(SecuXAccount account, ArrayList<SecuXAccountHisotry> historyList){
         if (account.mName.length()==0)
             return false;
@@ -89,6 +114,24 @@ public class SecuXAccountManager {
             JSONObject param = new JSONObject();
             param.put("coinType", account.mCoinType.toString());
             param.put("pubKey", account.mName);
+
+            String strRet = mSecuXSvrReqHandler.getAccountHistory(param);
+            return handleAccountHistoryData(strRet, historyList);
+        }catch(Exception e){
+            Log.e("secux-paymentkit", e.getLocalizedMessage());
+        }
+
+        return false;
+    }
+
+    private boolean getLBRAccountHistory(SecuXAccount account, ArrayList<SecuXAccountHisotry> historyList){
+        if (account.mName.length()==0)
+            return false;
+
+        try{
+            JSONObject param = new JSONObject();
+            param.put("coinType", account.mCoinType.toString());
+            param.put("pubKey", account.mAddress);
 
             String strRet = mSecuXSvrReqHandler.getAccountHistory(param);
             return handleAccountHistoryData(strRet, historyList);
