@@ -67,7 +67,7 @@ public class SecuXPaymentManagerBase {
         mPaymentPeripheralManager.setOnConnectCompleteListener(new OnConnectCompleteListener() {
             @Override
             public void onConnectComplete(DiscoveredDevice discoveredDevice) {
-
+                Log.i("secux-paymentkit", "peripheral manager onConnectComplete");
             }
         });
     }
@@ -98,6 +98,10 @@ public class SecuXPaymentManagerBase {
         return false;
     }
 
+    protected void cancelPayment(){
+        mPaymentPeripheralManager.stopScan();
+    }
+
     protected void doPayment(SecuXAccount account, String storeName, String paymentInfo){
 
         Log.e("secux-paymentkit", "doPayment");
@@ -105,9 +109,8 @@ public class SecuXPaymentManagerBase {
         this.mAccount = account;
         this.mStoreName = storeName;
 
-
-        int scanTimeout = 8000;
-        int connectionTimeout = 8000;
+        int scanTimeout = 5000;
+        int connectionTimeout = 5000;
         int rssi = -80;
 
 
