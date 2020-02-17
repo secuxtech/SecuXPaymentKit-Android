@@ -46,13 +46,13 @@ implementation fileTree(dir: 'libs', include: ['*.aar'])
 
     Request permission
 
-    ```java
+```java
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
     }
-    ```
+```
 
 ### Import the the module
 
