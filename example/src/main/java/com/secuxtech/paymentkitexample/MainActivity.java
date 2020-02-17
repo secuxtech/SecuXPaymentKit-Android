@@ -123,7 +123,6 @@ public class MainActivity extends AppCompatActivity {
                     if (ret){
                         final String name = storeName;
 
-
                         //Use SecuXManager to do payment, must call in main thread
                         mPaymentManager.doPayment(mContext, mAccount, name, mPaymentInfo);
 
