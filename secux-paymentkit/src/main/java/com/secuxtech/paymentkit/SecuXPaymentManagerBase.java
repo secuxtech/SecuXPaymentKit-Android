@@ -17,9 +17,11 @@ import com.secux.payment.sdk.PaymentPeripheralManager;
 import com.secux.payment.sdk.listener.OnConnectCompleteListener;
 import com.secux.payment.sdk.listener.OnErrorListener;
 import com.secux.payment.sdk.listener.OnGetDataMapCompleteListener;
+import com.secux.payment.sdk.listener.OnScanCompleteListener;
 import com.secux.payment.sdk.listener.OnSendStringCompleteListener;
 
 import java.util.Map;
+import java.util.Set;
 
 class PaymentInfo{
     String mCoinType;
@@ -43,10 +45,16 @@ public class SecuXPaymentManagerBase {
 
 
     SecuXPaymentManagerBase(){
+        Log.i("secux-paymentkit", "SecuXPaymentManagerBase");
+
         mPaymentPeripheralManager.setOnErrorListener(new OnErrorListener() {
             @Override
-            public void onError(BoxError error) {
-                handlePaymentDone(false, error.getMessage());
+            public void onError(BoxError boxError) {
+                if (boxError != null){
+                    mPaymentPeripheralManager.stopScan();
+                    handlePaymentDone(false, boxError.getMessage());
+                }
+
             }
         });
         mPaymentPeripheralManager.setOnSendStringCompleteListener(new OnSendStringCompleteListener() {
@@ -64,12 +72,26 @@ public class SecuXPaymentManagerBase {
 
             }
         });
+        /*
+        mPaymentPeripheralManager.setOnScanCompleteListener(new OnScanCompleteListener() {
+            @Override
+            public void onScanComplete(Set<DiscoveredDevice> scannedDevices) {
+
+                int scanTimeout = 5;
+                int connectionTimeout = 5;
+                int rssi = -80;
+                mPaymentPeripheralManager.doPeripheralAuthenticityVerification(mContext, scanTimeout, mPaymentInfo.mDevID, rssi, connectionTimeout);
+            }
+        });
+
+         */
         mPaymentPeripheralManager.setOnConnectCompleteListener(new OnConnectCompleteListener() {
             @Override
             public void onConnectComplete(DiscoveredDevice discoveredDevice) {
                 Log.i("secux-paymentkit", "peripheral manager onConnectComplete");
             }
         });
+
     }
 
     protected Boolean getPaymentStoreInfo(String paymentInfo){
@@ -109,14 +131,16 @@ public class SecuXPaymentManagerBase {
         this.mAccount = account;
         this.mStoreName = storeName;
 
-        int scanTimeout = 5000;
-        int connectionTimeout = 5000;
+        int scanTimeout = 5;
+        int connectionTimeout = 5;
         int rssi = -80;
-
 
         if (getPaymentInfo(paymentInfo)){
             handlePaymentStatus("Device connecting ...");
+
+            //mPaymentPeripheralManager.discoverNearbyPeripherals(mContext, 3, rssi);
             mPaymentPeripheralManager.doPeripheralAuthenticityVerification(mContext, scanTimeout, mPaymentInfo.mDevID, rssi, connectionTimeout);
+
         }else {
             handlePaymentDone(false, "Wrong payment information");
         }
