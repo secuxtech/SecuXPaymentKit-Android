@@ -36,7 +36,7 @@ implementation fileTree(dir: 'libs', include: ['*.aar'])
 
 ### Add bluetooth privacy permissions
 
-    Add permission to the AndroidManifest.xml
+Add permission to the AndroidManifest.xml
 
     <uses-permission android:name="android.permission.BLUETOOTH"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
@@ -44,7 +44,7 @@ implementation fileTree(dir: 'libs', include: ['*.aar'])
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
-    Request permission
+Request permission
 
 ```java
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -57,7 +57,7 @@ implementation fileTree(dir: 'libs', include: ['*.aar'])
 ### Import the the module
 
 ```java 
- import com.secuxtech.paymentkit.*;
+import com.secuxtech.paymentkit.*;
 ```
 
 ### Use SecuXAccountManager to get account balance and history
