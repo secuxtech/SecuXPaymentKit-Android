@@ -2,6 +2,8 @@ package com.secuxtech.paymentkit;
 
 import android.util.Log;
 
+import androidx.core.util.Pair;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -13,40 +15,117 @@ public class SecuXAccountManager {
 
     private SecuXServerRequestHandler mSecuXSvrReqHandler = new SecuXServerRequestHandler();
 
-    public boolean getAccountBalance(SecuXAccount account, SecuXAccountBalance balance){
-        switch (account.mCoinType){
-            case SecuXCoinType.DCT:
-            case SecuXCoinType.IFC:
-                return getDCTAccountBalance(account, balance);
+    public boolean registerUserAccount(SecuXUserAccount userAccount){
+        Pair<Boolean, String> response = mSecuXSvrReqHandler.userRegister(userAccount.mAccountName, userAccount.mPassword, userAccount.mEmail, userAccount.mAlias, userAccount.mPhoneNum);
 
-            case SecuXCoinType.LBR:
-                return getLBRAccountBalance(account, balance);
+        if (response.first){
+            try{
+                JSONObject responseJson = new JSONObject(response.second);
+                String coinType = responseJson.getString("coinType");
+                String coinSymbol = responseJson.getString("symbol");
+                Double balance = responseJson.getDouble("balance");
+                Double formattedBalance = responseJson.getDouble("formattedBalance");
+                Double usdBlance = responseJson.getDouble("balance_usd");
 
-            default:
-                break;
+                return true;
 
+            }catch (Exception e){
+
+            }
         }
 
         return false;
     }
 
-    public boolean getAccountHistory(SecuXAccount account, ArrayList<SecuXAccountHisotry> historyList){
-        switch (account.mCoinType){
-            case SecuXCoinType.DCT:
-            case SecuXCoinType.IFC:
-                return getDCTAccountHistory(account, historyList);
+    public boolean loginUserAccount(SecuXUserAccount userAccount){
+        Pair<Boolean, String>  response = mSecuXSvrReqHandler.userLogin(userAccount.mAccountName, userAccount.mPassword);
+        if (response.first) {
+            try {
+                JSONObject responseJson = new JSONObject(response.second);
+                String coinType = responseJson.getString("coinType");
+                String coinSymbol = responseJson.getString("symbol");
+                Double balance = responseJson.getDouble("balance");
+                Double formattedBalance = responseJson.getDouble("formattedBalance");
+                Double usdBlance = responseJson.getDouble("balance_usd");
 
-            case SecuXCoinType.LBR:
-                return getLBRAccountHistory(account, historyList);
+                SecuXSymbolAccountBalance symbolBalance = new SecuXSymbolAccountBalance(balance, formattedBalance, usdBlance);
+                Map<String, SecuXSymbolAccountBalance> symbolBalanceMap = new HashMap<>();
+                symbolBalanceMap.put(coinSymbol, symbolBalance);
 
-            default:
-                break;
+                SecuXCoinAccount coinAccount = new SecuXCoinAccount(coinType, symbolBalanceMap);
 
+                userAccount.mCoinAccountArr.add(coinAccount);
+                return true;
+
+            } catch (Exception e) {
+
+            }
         }
 
         return false;
     }
 
+    public boolean getAccountBalance(SecuXUserAccount userAccount, String coinType, String symbolType){
+        Pair<Boolean, String>  response = this.mSecuXSvrReqHandler.getAccountBalance(userAccount.mAccountName, coinType, symbolType);
+        if (response.first) {
+            try {
+                JSONObject responseJson = new JSONObject(response.second);
+                Double balance = responseJson.getDouble("balance");
+                Double formattedBalance = responseJson.getDouble("formattedBalance");
+                Double usdBlance = responseJson.getDouble("balance_usd");
+
+                SecuXCoinAccount coinAcc = userAccount.getCoinAccount(coinType);
+                if (coinAcc != null) {
+                    return coinAcc.updateSymbolBalance(symbolType, balance, formattedBalance, usdBlance);
+                }
+
+            } catch (Exception e) {
+
+            }
+        }
+
+        return false;
+    }
+
+    public boolean getAccountBalance(SecuXUserAccount userAccount){
+        Pair<Boolean, String>  response = this.mSecuXSvrReqHandler.getAccountBalance(userAccount.mAccountName);
+        if (response.first) {
+            try {
+                JSONArray responseJsonArr = new JSONArray(response.second);
+                for (int i = 0; i < responseJsonArr.length(); i++) {
+                    JSONObject itemJson = responseJsonArr.getJSONObject(i);
+                    String cointype = itemJson.getString("coinType");
+                    String symboltype = itemJson.getString("symbol");
+                    Double balance = itemJson.getDouble("balance");
+                    Double formattedBalance = itemJson.getDouble("formattedBalance");
+                    Double usdBlance = itemJson.getDouble("balance_usd");
+
+                    SecuXCoinAccount coinAcc = userAccount.getCoinAccount(cointype);
+                    if (coinAcc != null) {
+                        coinAcc.updateSymbolBalance(symboltype, balance, formattedBalance, usdBlance);
+                    }
+                }
+
+                return true;
+            } catch (Exception e) {
+
+            }
+        }
+
+        return false;
+    }
+
+    public boolean doTransfer(SecuXUserAccount account, String cointype, String symboltype, String amount, String receiver){
+        return false;
+    }
+
+    public boolean getTransferHistory(){
+        return false;
+    }
+
+
+
+    /*
     public Map<String, Double> getCoinUSDRate(){
         Map<String, Double> rateMap = new HashMap<String, Double>();
         String ret = mSecuXSvrReqHandler.getCoinCurrency();
@@ -181,4 +260,5 @@ public class SecuXAccountManager {
 
         return false;
     }
+    */
 }
