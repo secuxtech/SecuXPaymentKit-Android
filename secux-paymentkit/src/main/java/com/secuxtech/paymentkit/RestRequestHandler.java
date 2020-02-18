@@ -2,6 +2,8 @@ package com.secuxtech.paymentkit;
 
 import android.util.Log;
 
+import androidx.core.util.Pair;
+
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -13,6 +15,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class RestRequestHandler {
+
+    final public static String TAG = "secux-paymentkit";
 
     public void processURLRequest(){
 
@@ -53,7 +57,8 @@ public class RestRequestHandler {
         }
     }
 
-    public String processGetRequest(String path, String authorization) {
+    public Pair<Boolean, String> processGetRequest(String path, String authorization) {
+        Boolean result = false;
         String response = "";
         try {
             URL url = new URL(path);
@@ -65,19 +70,28 @@ public class RestRequestHandler {
             connection.setReadTimeout(5000);
             connection.connect();
 
-            // 获得返回值
-            InputStream in = connection.getInputStream();
-            response = getResponse(in);
-            Log.i("response", response);
+            Integer responseCode = connection.getResponseCode();
+            if (responseCode == 200) {
+                InputStream in = connection.getInputStream();
+                response = getResponse(in);
+                Log.i("response", response);
+            }else{
+                InputStream errIn = connection.getErrorStream();
+                response = getResponse(errIn);
+                //String errormsg = connection.getResponseMessage();
+                Log.e(TAG, "Server request response code = " + response);
+            }
 
             connection.disconnect();
         } catch (Exception e) {
             e.printStackTrace();
+            response = e.getMessage();
         }
-        return response;
+        return new Pair<>(result, response);
     }
 
-    public String processPostRequest(String path) {
+    public Pair<Boolean, String> processPostRequest(String path) {
+        Boolean result = false;
         String response = "";
         try {
             URL url = new URL(path);
@@ -94,18 +108,29 @@ public class RestRequestHandler {
             connection.setRequestProperty("Content-Type", "application/json");
             connection.connect();
 
-            InputStream in = connection.getInputStream();
-            response = getResponse(in);
-
+            Integer responseCode = connection.getResponseCode();
+            if (responseCode == 200) {
+                InputStream in = connection.getInputStream();
+                response = getResponse(in);
+                result = true;
+            }else{
+                InputStream errIn = connection.getErrorStream();
+                response = getResponse(errIn);
+                //String errormsg = connection.getResponseMessage();
+                Log.e(TAG, "Server request response code = " + response);
+            }
             connection.disconnect();
+
         } catch (Exception e) {
             e.printStackTrace();
+            response = e.getMessage();
         }
-        return response;
+        return new Pair<>(result, response);
     }
 
-    public String processPostRequest(String path, JSONObject param) {
+    public Pair<Boolean, String> processPostRequest(String path, JSONObject param) {
         String paramStr = param.toString();
+        Boolean result = false;
         String response = "";
         try {
             URL url = new URL(path);
@@ -128,15 +153,74 @@ public class RestRequestHandler {
             out.flush();
             out.close();
 
-
-            InputStream in = connection.getInputStream();
-            response = getResponse(in);
+            Integer responseCode = connection.getResponseCode();
+            if (responseCode == 200) {
+                InputStream in = connection.getInputStream();
+                response = getResponse(in);
+                result = true;
+            }else{
+                InputStream errIn = connection.getErrorStream();
+                response = getResponse(errIn);
+                //String errormsg = connection.getResponseMessage();
+                Log.e(TAG, "Server request response code = " + response);
+            }
 
             connection.disconnect();
+
         } catch (Exception e) {
             e.printStackTrace();
+            response = e.getMessage();
         }
-        return response;
+
+        return new Pair<>(result, response);
+    }
+
+    public Pair<Boolean, String> processPostRequest(String path, JSONObject param, String token) {
+        String paramStr = param.toString();
+        Boolean result = false;
+        String response;
+        try {
+            URL url = new URL(path);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+            connection.setRequestMethod("POST");
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
+            connection.setUseCaches(false);
+            connection.setConnectTimeout(30000);
+            connection.setReadTimeout(30000);
+            connection.setRequestProperty("Charset", "UTF-8");
+
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Authorization", "Bearer " + token);
+            connection.setRequestProperty("Content-Length", String.valueOf(paramStr.length()));
+            connection.connect();
+
+            DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+            out.writeBytes(paramStr);
+            out.flush();
+            out.close();
+
+            Integer responseCode = connection.getResponseCode();
+            if (responseCode == 200) {
+                InputStream in = connection.getInputStream();
+                response = getResponse(in);
+                result = true;
+            }else{
+                InputStream errIn = connection.getErrorStream();
+                response = getResponse(errIn);
+                //String errormsg = connection.getResponseMessage();
+                Log.e(TAG, "Server request response code = " + response);
+            }
+
+            connection.disconnect();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response = e.getMessage();
+        }
+
+        return new Pair<>(result, response);
     }
 
     private String getResponse(InputStream in) {
