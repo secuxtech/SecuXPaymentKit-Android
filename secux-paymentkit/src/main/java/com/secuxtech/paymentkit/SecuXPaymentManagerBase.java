@@ -8,6 +8,8 @@ import android.media.Image;
 import android.util.Base64;
 import android.util.Log;
 
+import androidx.core.util.Pair;
+
 import org.json.JSONObject;
 
 import com.secux.payment.sdk.BoxError;
@@ -99,23 +101,27 @@ public class SecuXPaymentManagerBase {
 
         mStoreName = "";
         mStoreLogo = null;
-        try{
-            if (getPaymentInfo(paymentInfo)) {
-                String param = "{\"coinType\":\"" + mPaymentInfo.mCoinType + "\",\"id\":\"" + mPaymentInfo.mDevID + "\",\"type\":\"Device\"}";
-                JSONObject jsonParam = new JSONObject(param);
-                JSONObject storeInfoJson = new JSONObject(this.mSecuXSvrReqHandler.getAccountInfo(jsonParam));
-                mStoreName = storeInfoJson.getString("name");
 
-                String base64String = storeInfoJson.getString("icon");
-                String base64Image = base64String.split(",")[1];
-                byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
-                mStoreLogo = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+        if (getPaymentInfo(paymentInfo)) {
 
-                return true;
+            Pair<Boolean, String> response = this.mSecuXSvrReqHandler.getStoreInfo(mPaymentInfo.mDevID);
+            if (response.first) {
+                try {
+                    JSONObject storeInfoJson = new JSONObject(response.second);
+                    mStoreName = storeInfoJson.getString("name");
+
+                    String base64String = storeInfoJson.getString("icon");
+                    String base64Image = base64String.split(",")[1];
+                    byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
+                    mStoreLogo = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+
+                    return true;
+                } catch (Exception e) {
+                    Log.e("secux-paymentkit", e.getLocalizedMessage());
+                }
             }
-        }catch (Exception e){
-            Log.e("secux-paymentkit", e.getLocalizedMessage());
         }
+
 
         return false;
     }
@@ -182,8 +188,12 @@ public class SecuXPaymentManagerBase {
             param.put("currency", mPaymentInfo.mCoinType);
 
             Log.i("secux-paymentkit", param.toString());
-            String payRet = mSecuXSvrReqHandler.doPayment(param);
-            JSONObject payRetJson = new JSONObject(payRet);
+            Pair<Boolean, String> payRet = mSecuXSvrReqHandler.doPayment(mPaymentInfo.mIVKey, mStoreName, "", "", "","", "");
+            if (!payRet.first){
+                return;
+            }
+
+            JSONObject payRetJson = new JSONObject(payRet.second);
             Log.i("secux-paymentkit", "Send server request done " + payRetJson.toString());
 
             int statusCode = payRetJson.getInt("statusCode");
