@@ -44,36 +44,21 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
 
-                Map<String, Double> coinRate = mAccountManager.getCoinUSDRate();
 
-                //Create SecuX account
-                //mAccount = new SecuXAccount("ifun-886-936105934-6", SecuXCoinType.DCT, "", "", "");
-                mAccount = new SecuXAccount("Alice-Libra", SecuXCoinType.LBR, "", "842d1a7e65d0e7788564dc03ea4bbe4e15d57719003bee6981f1a6d765443822", "");
+                SecuXUserAccount userAccount = new SecuXUserAccount("maochuntest5@secuxtech.com", "0975123456", "12345678");
+                boolean ret = mAccountManager.registerUserAccount(userAccount);
+                if (ret){
+                    ret = mAccountManager.loginUserAccount(userAccount);
 
-                SecuXAccountBalance balance = new SecuXAccountBalance();
-                if (mAccountManager.getAccountBalance(mAccount, balance)){
-                    Double usdBalance = balance.mUSDBalance;
-                    if (balance.mUSDBalance==0 && coinRate!=null && coinRate.containsKey(mAccount.mCoinType)){
-                        usdBalance = balance.mFormatedBalance * coinRate.get(mAccount.mCoinType);
+                    if (ret){
+                        mAccountManager.getAccountBalance(userAccount);
+
+                        mAccountManager.getAccountBalance(userAccount, "DCT", "SPC");
                     }
-
-                    Log.i("secux-paymentkit-exp",
-                            "getAccountBalance done. balance= " + String.valueOf(balance.mFormatedBalance) + ", usdBalance=" + String.valueOf(usdBalance));
-                }else{
-                    Log.i("secux-paymentkit-exp", "get account balance failed!");
                 }
 
-                ArrayList<SecuXAccountHisotry> historyList = new ArrayList<>();
-                if (mAccountManager.getAccountHistory(mAccount, historyList)){
-                    for(int i=0; i<historyList.size(); i++){
-                        SecuXAccountHisotry item = historyList.get(i);
 
-                        Log.i("secux-paymentkit-exp", item.timestamp + " " + item.tx_type + " "
-                                + item.formatted_amount + " " + item.amount_symbol + " $ " + item.amount_usd + " " + item.detailslUrl);
-                    }
-                }else{
-                    Log.i("secux-paymentkit-exp", "get account history failed!");
-                }
+
 
                 //Must set the callback for the SecuXPaymentManager
                 mPaymentManager.setSecuXPaymentManagerCallback(mPaymentMgrCallback);
@@ -124,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                         final String name = storeName;
 
                         //Use SecuXManager to do payment, must call in main thread
-                        mPaymentManager.doPayment(mContext, mAccount, name, mPaymentInfo);
+                        //mPaymentManager.doPayment(mContext, mAccount, name, mPaymentInfo);
 
                     }else{
                         Toast toast = Toast.makeText(mContext, "Get store info. failed!", Toast.LENGTH_LONG);
