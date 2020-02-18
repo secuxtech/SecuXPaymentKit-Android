@@ -9,9 +9,9 @@ public class SecuXCoinType {
     public static final String BTC = "BTC";
     public static final String DCT = "DCT";
     public static final String LBR = "LBR";
-    public static final String IFC = "IFC";
 
-    @StringDef({BTC, DCT, LBR, IFC})
+
+    @StringDef({BTC, DCT, LBR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface CoinType {}
 }
