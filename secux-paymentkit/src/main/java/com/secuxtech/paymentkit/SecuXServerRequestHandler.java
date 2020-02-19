@@ -1,9 +1,14 @@
 package com.secuxtech.paymentkit;
 
+/**
+ * Created by maochuns.sun@gmail.com on 2020-02-10
+ */
+
 import android.util.Log;
 import androidx.core.util.Pair;
 
 import org.json.JSONObject;
+
 
 public class SecuXServerRequestHandler extends RestRequestHandler {
 
@@ -19,7 +24,7 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
     static final String getStoreUrl = baseURL + "/api/Terminal/GetStore";
     static final String transferHistoryUrl = baseURL + "/api/Consumer/GetTxHistory";
 
-    private String mToken = "";
+    private static String mToken = "";
 
     public String getAdminToken(){
         Log.i(TAG, "getAdminToken");
@@ -61,7 +66,7 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
             param.put("tel", phoneNum);
             param.put("optional", "{}");
 
-            Pair<Boolean, String> result = this.processPostRequest(registerUrl, param, token);
+            Pair<Boolean, String> result = this.processPostRequest(registerUrl, param, token, 30000);
 
             Log.i(TAG, result.second);
             return result;
@@ -70,8 +75,6 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
             Log.e(TAG, e.getMessage());
             return new Pair<>(false, e.getLocalizedMessage());
         }
-
-
     }
 
     public Pair<Boolean, String> userLogin(String account, String pwd){
@@ -121,7 +124,6 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
             Log.e(TAG, e.getMessage());
             return new Pair<>(false, e.getLocalizedMessage());
         }
-
     }
 
     public Pair<Boolean, String> getAccountBalance(String account){
@@ -158,7 +160,7 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
             JSONObject param = new JSONObject();
             param.put("deviceId", devID);
 
-            Pair<Boolean, String> response = this.processPostRequest(userLoginUrl, param, mToken);
+            Pair<Boolean, String> response = this.processPostRequest(getStoreUrl, param, mToken);
 
             Log.i(TAG, response.second);
             return response;
@@ -170,8 +172,8 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
 
     }
 
-    public Pair<Boolean, String> doPayment(String ivKey, String momo, String symbol, String amount, String cointype, String account, String receiver){
-
+    public Pair<Boolean, String> doPayment(String sender, String storeName, PaymentInfo payInfo){
+        Log.i(TAG, "doPayment");
         if (mToken.length()==0){
             Log.e(TAG, "No token");
             return new Pair<>(false, "No token");
@@ -179,26 +181,25 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
 
         try{
             JSONObject param = new JSONObject();
-            param.put("ivKey", ivKey);
-            param.put("memo", momo);
-            param.put("symbol", symbol);
-            param.put("amount", amount);
-            param.put("coinType", cointype);
-            param.put("receiver", receiver);
+            param.put("ivKey", payInfo.mIVKey);
+            param.put("memo", storeName);
+            param.put("symbol", payInfo.mSymbol);
+            param.put("amount", payInfo.mAmount);
+            param.put("coinType", payInfo.mCoinType);
+            param.put("account", sender);
+            param.put("receiver", payInfo.mDevID);
 
-            Pair<Boolean, String> response = this.processPostRequest(transferUrl, param, mToken);
+            Pair<Boolean, String> response = this.processPostRequest(paymentUrl, param, mToken);
             return response;
 
         }catch (Exception e){
             Log.e(TAG, e.getMessage());
             return new Pair<>(false, e.getLocalizedMessage());
         }
-
-
     }
 
     public Pair<Boolean, String> doTransfer(String cointype, String symbol, String feesymbol, String account, String receiver, String amount){
-
+        Log.i(TAG, "doTransfer");
         if (mToken.length()==0){
             Log.e(TAG, "No token");
             return new Pair<>(false, "No token");
@@ -213,22 +214,42 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
             param.put("receiver", receiver);
             param.put("amount", amount);
 
-            Pair<Boolean, String> response = this.processPostRequest(transferUrl, param, mToken);
+            Pair<Boolean, String> response = this.processPostRequest(transferUrl, param, mToken, 10000);
             return response;
 
         }catch (Exception e){
             Log.e(TAG, e.getMessage());
             return new Pair<>(false, e.getLocalizedMessage());
         }
-
     }
 
-    public Pair<Boolean, String> getPaymentHistory(){
-        return new Pair<>(false, "");
+    public Pair<Boolean, String> getPaymentHistory(SecuXUserAccount account, String symbol, int pageIdx, int pageItemCount){
+        Log.i(TAG, "getPaymentHistory");
+        if (mToken.length()==0){
+            Log.e(TAG, "No token");
+            return new Pair<>(false, "No token");
+        }
+
+        try{
+            JSONObject param = new JSONObject();
+            param.put("account", account.mAccountName);
+            param.put("symbol", symbol);
+            param.put("page", pageIdx);
+            param.put("count", pageItemCount);
+            param.put("columnName", "");
+            param.put("sorting", "");
+
+            Pair<Boolean, String> response = this.processPostRequest(paymentHistoryUrl, param, mToken);
+            return response;
+
+        }catch (Exception e){
+            Log.e(TAG, e.getMessage());
+            return new Pair<>(false, e.getLocalizedMessage());
+        }
     }
 
-    public Pair<Boolean, String> getTransferHistory(SecuXUserAccount account, String cointype, String symboltype){
-
+    public Pair<Boolean, String> getTransferHistory(SecuXUserAccount account, String cointype, String symboltype, int page, int count){
+        Log.i(TAG, "getTransferHistory");
         if (mToken.length()==0){
             Log.e(TAG, "No token");
             return new Pair<>(false, "No token");
@@ -239,6 +260,8 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
             param.put("account", account.mAccountName);
             param.put("coinType", cointype);
             param.put("symbol", symboltype);
+            param.put("page", page);
+            param.put("count", count);
 
             Pair<Boolean, String> response = this.processPostRequest(transferHistoryUrl, param, mToken);
             return response;
@@ -247,6 +270,5 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
             Log.e(TAG, e.getMessage());
             return new Pair<>(false, e.getLocalizedMessage());
         }
-
     }
 }

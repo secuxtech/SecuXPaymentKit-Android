@@ -1,6 +1,8 @@
 package com.secuxtech.paymentkit;
 
-import android.util.Log;
+/**
+ * Created by maochuns.sun@gmail.com on 2020-02-03
+ */
 
 import androidx.core.util.Pair;
 
@@ -13,9 +15,10 @@ import java.util.Map;
 
 public class SecuXAccountManager {
 
+    private static String TAG = "secux-paymentkit";
     private SecuXServerRequestHandler mSecuXSvrReqHandler = new SecuXServerRequestHandler();
 
-    public boolean registerUserAccount(SecuXUserAccount userAccount){
+    public Pair<Boolean, String> registerUserAccount(SecuXUserAccount userAccount){
         Pair<Boolean, String> response = mSecuXSvrReqHandler.userRegister(userAccount.mAccountName, userAccount.mPassword, userAccount.mEmail, userAccount.mAlias, userAccount.mPhoneNum);
 
         if (response.first){
@@ -27,17 +30,17 @@ public class SecuXAccountManager {
                 Double formattedBalance = responseJson.getDouble("formattedBalance");
                 Double usdBlance = responseJson.getDouble("balance_usd");
 
-                return true;
+                return new Pair<>(true, "");
 
             }catch (Exception e){
-
+                return new Pair<>(false, "Invalid return value");
             }
         }
 
-        return false;
+        return response;
     }
 
-    public boolean loginUserAccount(SecuXUserAccount userAccount){
+    public Pair<Boolean, String> loginUserAccount(SecuXUserAccount userAccount){
         Pair<Boolean, String>  response = mSecuXSvrReqHandler.userLogin(userAccount.mAccountName, userAccount.mPassword);
         if (response.first) {
             try {
@@ -48,24 +51,24 @@ public class SecuXAccountManager {
                 Double formattedBalance = responseJson.getDouble("formattedBalance");
                 Double usdBlance = responseJson.getDouble("balance_usd");
 
-                SecuXSymbolAccountBalance symbolBalance = new SecuXSymbolAccountBalance(balance, formattedBalance, usdBlance);
-                Map<String, SecuXSymbolAccountBalance> symbolBalanceMap = new HashMap<>();
+                SecuXCoinTokenBalance symbolBalance = new SecuXCoinTokenBalance(balance, formattedBalance, usdBlance);
+                Map<String, SecuXCoinTokenBalance> symbolBalanceMap = new HashMap<>();
                 symbolBalanceMap.put(coinSymbol, symbolBalance);
 
                 SecuXCoinAccount coinAccount = new SecuXCoinAccount(coinType, symbolBalanceMap);
 
                 userAccount.mCoinAccountArr.add(coinAccount);
-                return true;
+                return new Pair<>(true, "");
 
             } catch (Exception e) {
-
+                return new Pair<>(false, "Invalid return value");
             }
         }
 
-        return false;
+        return response;
     }
 
-    public boolean getAccountBalance(SecuXUserAccount userAccount, String coinType, String symbolType){
+    public Pair<Boolean, String> getAccountBalance(SecuXUserAccount userAccount, String coinType, String symbolType){
         Pair<Boolean, String>  response = this.mSecuXSvrReqHandler.getAccountBalance(userAccount.mAccountName, coinType, symbolType);
         if (response.first) {
             try {
@@ -76,18 +79,25 @@ public class SecuXAccountManager {
 
                 SecuXCoinAccount coinAcc = userAccount.getCoinAccount(coinType);
                 if (coinAcc != null) {
-                    return coinAcc.updateSymbolBalance(symbolType, balance, formattedBalance, usdBlance);
+                    Boolean ret = coinAcc.updateSymbolBalance(symbolType, balance, formattedBalance, usdBlance);
+                    if (ret){
+                        return new Pair<>(true, "");
+                    }else{
+                        return new Pair<>(false, "Invalid symbol type");
+                    }
+                }else{
+                    return new Pair<>(false, "Invalid coin type");
                 }
 
             } catch (Exception e) {
-
+                return new Pair<>(false, "Invalid return value");
             }
         }
 
-        return false;
+        return response;
     }
 
-    public boolean getAccountBalance(SecuXUserAccount userAccount){
+    public Pair<Boolean, String>  getAccountBalance(SecuXUserAccount userAccount){
         Pair<Boolean, String>  response = this.mSecuXSvrReqHandler.getAccountBalance(userAccount.mAccountName);
         if (response.first) {
             try {
@@ -102,25 +112,71 @@ public class SecuXAccountManager {
 
                     SecuXCoinAccount coinAcc = userAccount.getCoinAccount(cointype);
                     if (coinAcc != null) {
-                        coinAcc.updateSymbolBalance(symboltype, balance, formattedBalance, usdBlance);
+                        if (!coinAcc.updateSymbolBalance(symboltype, balance, formattedBalance, usdBlance)){
+                            SecuXCoinTokenBalance symbolBalance = new SecuXCoinTokenBalance(balance, formattedBalance, usdBlance);
+                            coinAcc.mSymbolBalanceMap.put(symboltype, symbolBalance);
+                        }
+                    }else{
+                        SecuXCoinTokenBalance symbolBalance = new SecuXCoinTokenBalance(balance, formattedBalance, usdBlance);
+                        Map<String, SecuXCoinTokenBalance> symbolBalanceMap = new HashMap<>();
+                        symbolBalanceMap.put(cointype, symbolBalance);
+
+                        SecuXCoinAccount coinAccount = new SecuXCoinAccount(cointype, symbolBalanceMap);
+                        userAccount.mCoinAccountArr.add(coinAccount);
                     }
                 }
 
-                return true;
-            } catch (Exception e) {
+                return new Pair<>(true, "");
 
+            } catch (Exception e) {
+                return new Pair<>(false, "Invalid return value");
+            }
+        }
+        return response;
+    }
+
+    public Pair<Boolean, String> doTransfer(SecuXUserAccount account, String cointype, String symboltype, String feeSymbol,
+                                            String amount, String receiver, SecuXTransferResult transRet){
+
+        Pair<Boolean, String> response = mSecuXSvrReqHandler.doTransfer(cointype, symboltype, feeSymbol, account.mAccountName, receiver, amount);
+        if (response.first){
+            try{
+                JSONObject transRetJson = new JSONObject(response.second);
+                int statusCode = transRetJson.getInt("statusCode");
+                String statusDesc = transRetJson.getString("statusDesc");
+
+                if (statusCode != 200){
+                    return new Pair<>(false, statusDesc);
+                }
+                transRet.mTxID = transRetJson.getString("txId");
+                transRet.mDetailsUrl = transRetJson.getString("detailsUrl");
+                return new Pair<>(true, "");
+            }catch (Exception e){
+                return new Pair<>(false, "Invalid return value");
+            }
+        }
+        return response;
+    }
+
+    public Pair<Boolean, String> getTransferHistory(SecuXUserAccount account, String cointype, String symboltype,
+                                                    int page, int count, ArrayList<SecuXTransferHistory> historyArr){
+
+        Pair<Boolean, String> response = mSecuXSvrReqHandler.getTransferHistory(account, cointype, symboltype, page, count);
+        if (response.first){
+            try {
+                JSONArray responseJsonArr = new JSONArray(response.second);
+                for (int i = 0; i < responseJsonArr.length(); i++) {
+                    JSONObject itemJson = responseJsonArr.getJSONObject(i);
+                    SecuXTransferHistory history = new SecuXTransferHistory(itemJson);
+                    historyArr.add(history);
+                }
+                return new Pair<>(true, "");
+            }catch (Exception e){
+                return new Pair<>(true, "Invalid return value");
             }
         }
 
-        return false;
-    }
-
-    public boolean doTransfer(SecuXUserAccount account, String cointype, String symboltype, String amount, String receiver){
-        return false;
-    }
-
-    public boolean getTransferHistory(){
-        return false;
+        return response;
     }
 
 

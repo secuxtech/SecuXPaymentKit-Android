@@ -1,5 +1,9 @@
 package com.secuxtech.paymentkit;
 
+/**
+ * Created by maochuns.sun@gmail.com on 2020-02-05
+ */
+
 import android.util.Log;
 
 import androidx.core.util.Pair;
@@ -14,9 +18,14 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import javax.net.ssl.HttpsURLConnection;
+
 public class RestRequestHandler {
 
     final public static String TAG = "secux-paymentkit";
+
+    private Integer mConnectTimeout = 5000;
+    private Boolean mLogReply = false;
 
     public void processURLRequest(){
 
@@ -66,15 +75,18 @@ public class RestRequestHandler {
 
             connection.setRequestProperty("Authorization", "Basic " + authorization);
             connection.setRequestMethod("GET");
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
+            connection.setConnectTimeout(mConnectTimeout);
+            connection.setReadTimeout(mConnectTimeout);
             connection.connect();
 
             Integer responseCode = connection.getResponseCode();
-            if (responseCode == 200) {
+            if (responseCode == HttpsURLConnection.HTTP_OK) {
                 InputStream in = connection.getInputStream();
                 response = getResponse(in);
-                Log.i("response", response);
+
+                if (mLogReply) {
+                    Log.i(TAG, response);
+                }
             }else{
                 InputStream errIn = connection.getErrorStream();
                 response = getResponse(errIn);
@@ -101,18 +113,22 @@ public class RestRequestHandler {
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setUseCaches(false);
-            connection.setConnectTimeout(2000);
-            connection.setReadTimeout(2000);
+            connection.setConnectTimeout(mConnectTimeout);
+            connection.setReadTimeout(mConnectTimeout);
             connection.setRequestProperty("Charset", "UTF-8");
             connection.setRequestProperty("Content-Length", "0");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.connect();
 
             Integer responseCode = connection.getResponseCode();
-            if (responseCode == 200) {
+            if (responseCode == HttpsURLConnection.HTTP_OK) {
                 InputStream in = connection.getInputStream();
                 response = getResponse(in);
                 result = true;
+
+                if (mLogReply) {
+                    Log.i(TAG, response);
+                }
             }else{
                 InputStream errIn = connection.getErrorStream();
                 response = getResponse(errIn);
@@ -140,8 +156,8 @@ public class RestRequestHandler {
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setUseCaches(false);
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
+            connection.setConnectTimeout(mConnectTimeout);
+            connection.setReadTimeout(mConnectTimeout);
             connection.setRequestProperty("Charset", "UTF-8");
             connection.setRequestProperty("Content-Length", String.valueOf(paramStr.length()));
             connection.setRequestProperty("Content-Type", "application/json");
@@ -154,10 +170,15 @@ public class RestRequestHandler {
             out.close();
 
             Integer responseCode = connection.getResponseCode();
-            if (responseCode == 200) {
+            if (responseCode == HttpsURLConnection.HTTP_OK) {
                 InputStream in = connection.getInputStream();
                 response = getResponse(in);
                 result = true;
+
+                if (mLogReply) {
+                    Log.i(TAG, response);
+                }
+
             }else{
                 InputStream errIn = connection.getErrorStream();
                 response = getResponse(errIn);
@@ -175,7 +196,11 @@ public class RestRequestHandler {
         return new Pair<>(result, response);
     }
 
-    public Pair<Boolean, String> processPostRequest(String path, JSONObject param, String token) {
+    Pair<Boolean, String> processPostRequest(String path, JSONObject param, String token) {
+        return processPostRequest(path, param, token, mConnectTimeout);
+    }
+
+    public Pair<Boolean, String> processPostRequest(String path, JSONObject param, String token, Integer timeout) {
         String paramStr = param.toString();
         Boolean result = false;
         String response;
@@ -187,8 +212,8 @@ public class RestRequestHandler {
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setUseCaches(false);
-            connection.setConnectTimeout(30000);
-            connection.setReadTimeout(30000);
+            connection.setConnectTimeout(timeout);
+            connection.setReadTimeout(timeout);
             connection.setRequestProperty("Charset", "UTF-8");
 
             connection.setRequestProperty("Content-Type", "application/json");
@@ -202,10 +227,14 @@ public class RestRequestHandler {
             out.close();
 
             Integer responseCode = connection.getResponseCode();
-            if (responseCode == 200) {
+            if (responseCode == HttpsURLConnection.HTTP_OK) {
                 InputStream in = connection.getInputStream();
                 response = getResponse(in);
                 result = true;
+
+                if (mLogReply) {
+                    Log.i(TAG, response);
+                }
             }else{
                 InputStream errIn = connection.getErrorStream();
                 response = getResponse(errIn);
@@ -242,6 +271,5 @@ public class RestRequestHandler {
         }
         return builder.toString();
     }
-
 
 }

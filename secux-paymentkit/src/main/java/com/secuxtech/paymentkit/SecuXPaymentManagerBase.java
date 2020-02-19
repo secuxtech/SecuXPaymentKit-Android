@@ -1,5 +1,9 @@
 package com.secuxtech.paymentkit;
 
+/**
+ * Created by maochuns.sun@gmail.com on 2020-02-10
+ */
+
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -25,8 +29,11 @@ import com.secux.payment.sdk.listener.OnSendStringCompleteListener;
 import java.util.Map;
 import java.util.Set;
 
+import static com.secuxtech.paymentkit.RestRequestHandler.TAG;
+
 class PaymentInfo{
     String mCoinType;
+    String mSymbol;
     String mAmount;
     String mDevID;
     String mIVKey;
@@ -37,17 +44,17 @@ public class SecuXPaymentManagerBase {
     protected SecuXPaymentManagerCallback mCallback = null;
     protected Context mContext = null;
 
-    private SecuXServerRequestHandler mSecuXSvrReqHandler = new SecuXServerRequestHandler();
+    protected SecuXServerRequestHandler mSecuXSvrReqHandler = new SecuXServerRequestHandler();
     private PaymentPeripheralManager mPaymentPeripheralManager = new PaymentPeripheralManager();
 
+    private SecuXUserAccount mAccount = null;
     private PaymentInfo mPaymentInfo = new PaymentInfo();
-    private SecuXAccount mAccount = null;
+
     private String mStoreName = "";
     private Bitmap mStoreLogo = null;
 
-
     SecuXPaymentManagerBase(){
-        Log.i("secux-paymentkit", "SecuXPaymentManagerBase");
+        Log.i(TAG, "SecuXPaymentManagerBase");
 
         mPaymentPeripheralManager.setOnErrorListener(new OnErrorListener() {
             @Override
@@ -63,11 +70,16 @@ public class SecuXPaymentManagerBase {
             @Override
             public void onComplete(final String response) {
                 mPaymentInfo.mIVKey = response;
-                Log.i("secux-paymentkit", "getIVkey " + response);
+                Log.i(TAG, "getIVkey " + response);
 
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
+                        try {
+                            Thread.sleep(1000);
+                        }catch (Exception e){
+
+                        }
                         sendInfoToDevice();
                     }
                 }).start();
@@ -90,14 +102,14 @@ public class SecuXPaymentManagerBase {
         mPaymentPeripheralManager.setOnConnectCompleteListener(new OnConnectCompleteListener() {
             @Override
             public void onConnectComplete(DiscoveredDevice discoveredDevice) {
-                Log.i("secux-paymentkit", "peripheral manager onConnectComplete");
+                Log.i(TAG, "peripheral manager onConnectComplete");
             }
         });
 
     }
 
     protected Boolean getPaymentStoreInfo(String paymentInfo){
-        Log.i("secux-paymentkit", "getStoreInfo");
+        Log.i(TAG, "getStoreInfo");
 
         mStoreName = "";
         mStoreLogo = null;
@@ -117,22 +129,18 @@ public class SecuXPaymentManagerBase {
 
                     return true;
                 } catch (Exception e) {
-                    Log.e("secux-paymentkit", e.getLocalizedMessage());
+                    Log.e(TAG, e.getLocalizedMessage());
                 }
             }
         }
 
-
         return false;
     }
 
-    protected void cancelPayment(){
-        mPaymentPeripheralManager.stopScan();
-    }
 
-    protected void doPayment(SecuXAccount account, String storeName, String paymentInfo){
+    protected void doPayment(SecuXUserAccount account, String storeName, String paymentInfo){
 
-        Log.e("secux-paymentkit", "doPayment");
+        Log.e(TAG, "doPayment");
 
         this.mAccount = account;
         this.mStoreName = storeName;
@@ -144,7 +152,6 @@ public class SecuXPaymentManagerBase {
         if (getPaymentInfo(paymentInfo)){
             handlePaymentStatus("Device connecting ...");
 
-            //mPaymentPeripheralManager.discoverNearbyPeripherals(mContext, 3, rssi);
             mPaymentPeripheralManager.doPeripheralAuthenticityVerification(mContext, scanTimeout, mPaymentInfo.mDevID, rssi, connectionTimeout);
 
         }else {
@@ -159,6 +166,7 @@ public class SecuXPaymentManagerBase {
             mPaymentInfo.mAmount = jsonInfo.getString("amount");
             mPaymentInfo.mDevID = jsonInfo.getString("deviceID");
             mPaymentInfo.mCoinType = jsonInfo.getString("coinType");
+            mPaymentInfo.mSymbol = jsonInfo.getString("token");
 
         }catch (Exception e){
             return false;
@@ -166,35 +174,20 @@ public class SecuXPaymentManagerBase {
         return true;
     }
 
-
     protected void sendInfoToDevice(){
 
-        Log.i("secux-paymentkit", "sendInfoToDevice");
-        String fromAcc = mAccount.mName;
-        if (mAccount.mCoinType.toString().compareTo(SecuXCoinType.LBR)==0){
-            fromAcc = mAccount.mAddress;
+        Log.i(TAG, "sendInfoToDevice");
+
+        Pair<Boolean, String> payRet = mSecuXSvrReqHandler.doPayment(mAccount.mAccountName, mStoreName, mPaymentInfo);
+        if (!payRet.first){
+            return;
         }
 
-        handlePaymentStatus(mAccount.mCoinType.toString() + " transferring...");
+        handlePaymentStatus(mPaymentInfo.mSymbol + " transferring...");
         try {
-            JSONObject param = new JSONObject();
-            param.put("coinType", mAccount.mCoinType.toString());
-            param.put("from", fromAcc);
-            param.put("txId", "P123456789123456");
-            param.put("to", mPaymentInfo.mDevID);
-            param.put("amount", mPaymentInfo.mAmount);
-            param.put("ivKey", mPaymentInfo.mIVKey);
-            param.put("memo", mStoreName);
-            param.put("currency", mPaymentInfo.mCoinType);
-
-            Log.i("secux-paymentkit", param.toString());
-            Pair<Boolean, String> payRet = mSecuXSvrReqHandler.doPayment(mPaymentInfo.mIVKey, mStoreName, "", "", "","", "");
-            if (!payRet.first){
-                return;
-            }
 
             JSONObject payRetJson = new JSONObject(payRet.second);
-            Log.i("secux-paymentkit", "Send server request done " + payRetJson.toString());
+            Log.i(TAG, "Send server request done " + payRetJson.toString());
 
             int statusCode = payRetJson.getInt("statusCode");
             String statusDesc = payRetJson.getString("statusDesc");
@@ -242,27 +235,27 @@ public class SecuXPaymentManagerBase {
             });
 
         }catch (Exception e){
-            Log.e("secux-paymentkit", e.getLocalizedMessage());
-            handlePaymentDone(false, mAccount.mCoinType.toString() + " transfer failed!");
+            Log.e(TAG, e.getLocalizedMessage());
+            handlePaymentDone(false, mPaymentInfo.mCoinType.toString() + " transfer failed!");
         }
     }
 
     protected void handleGetStoreInfoDone(final boolean ret){
-        Log.i("secux-paymentkit", "Get store info. done " + String.valueOf(ret) + " " + mStoreName);
+        Log.i(TAG, "Get store info. done " + String.valueOf(ret) + " " + mStoreName);
         if (mCallback!=null){
             mCallback.getStoreInfoDone(ret, mStoreName, mStoreLogo);
         }
     }
 
     protected void handlePaymentStatus(final String status){
-        Log.i("secux-paymentkit", "Payment status " + status);
+        Log.i(TAG, "Payment status " + status);
         if (mCallback!=null){
             mCallback.updatePaymentStatus(status);
         }
     }
 
     protected void handlePaymentDone(final boolean ret, final String errorMsg){
-        Log.i("secux-paymentkit", "Payment done " + String.valueOf(ret));
+        Log.i(TAG, "Payment done " + String.valueOf(ret));
         if (mCallback!=null){
             mCallback.paymentDone(ret, errorMsg);
         }

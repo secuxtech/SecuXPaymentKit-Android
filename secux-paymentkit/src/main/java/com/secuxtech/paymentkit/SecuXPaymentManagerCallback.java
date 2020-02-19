@@ -1,5 +1,9 @@
 package com.secuxtech.paymentkit;
 
+/**
+ * Created by maochuns.sun@gmail.com on 2020-02-10
+ */
+
 import android.graphics.Bitmap;
 import android.media.Image;
 
