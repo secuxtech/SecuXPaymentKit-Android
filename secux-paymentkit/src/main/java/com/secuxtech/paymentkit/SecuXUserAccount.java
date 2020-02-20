@@ -2,6 +2,10 @@ package com.secuxtech.paymentkit;
 
 import java.util.ArrayList;
 
+/**
+ * Created by maochuns.sun@gmail.com on 2020-02-19
+ */
+
 public class SecuXUserAccount {
     public String mAccountName = "";
     public String mPassword = "";
@@ -20,7 +24,7 @@ public class SecuXUserAccount {
         mPhoneNum = phone;
     }
     
-    public SecuXCoinAccount getCoinAccount(@SecuXCoinType.CoinType String coinType){
+    public SecuXCoinAccount getCoinAccount(String coinType){
 
         for(int i=0; i<mCoinAccountArr.size(); i++){
             SecuXCoinAccount account = mCoinAccountArr.get(i);
