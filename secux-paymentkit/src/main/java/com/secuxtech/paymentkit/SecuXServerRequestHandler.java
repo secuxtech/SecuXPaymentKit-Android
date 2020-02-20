@@ -99,11 +99,10 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
 
             return new Pair<>(false, e.getLocalizedMessage());
         }
-
     }
 
-    public Pair<Boolean, String> getAccountBalance(String account, String cointype, String coinsymbol){
-        Log.i(TAG, "getAccountBalance " + account + " " + cointype + " " + coinsymbol);
+    public Pair<Boolean, String> getAccountBalance(String account, String cointype, String token){
+        Log.i(TAG, "getAccountBalance " + account + " " + cointype + " " + token);
 
         if (mToken.length()==0){
             Log.e(TAG, "No token");
@@ -112,9 +111,9 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
 
         try{
             JSONObject param = new JSONObject();
-            param.put("account", account);
+            //param.put("account", account);
             param.put("coinType", cointype);
-            param.put("symbol", coinsymbol);
+            param.put("symbol", token);
             Pair<Boolean, String> response = this.processPostRequest(balanceUrl, param, mToken);
 
             Log.i(TAG, response.second);
@@ -136,7 +135,7 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
 
         try{
             JSONObject param = new JSONObject();
-            param.put("account", account);
+            //param.put("account", account);
             Pair<Boolean, String> response = this.processPostRequest(balanceListUrl, param, mToken);
 
             Log.i(TAG, response.second);
@@ -183,10 +182,10 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
             JSONObject param = new JSONObject();
             param.put("ivKey", payInfo.mIVKey);
             param.put("memo", storeName);
-            param.put("symbol", payInfo.mSymbol);
+            param.put("symbol", payInfo.mToken);
             param.put("amount", payInfo.mAmount);
             param.put("coinType", payInfo.mCoinType);
-            param.put("account", sender);
+            //param.put("account", sender);
             param.put("receiver", payInfo.mDevID);
 
             Pair<Boolean, String> response = this.processPostRequest(paymentUrl, param, mToken);
@@ -198,7 +197,7 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
         }
     }
 
-    public Pair<Boolean, String> doTransfer(String cointype, String symbol, String feesymbol, String account, String receiver, String amount){
+    public Pair<Boolean, String> doTransfer(String cointype, String token, String feesymbol, String account, String receiver, String amount){
         Log.i(TAG, "doTransfer");
         if (mToken.length()==0){
             Log.e(TAG, "No token");
@@ -208,9 +207,9 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
         try{
             JSONObject param = new JSONObject();
             param.put("coinType", cointype);
-            param.put("symbol", symbol);
+            param.put("symbol", token);
             param.put("feeSymbol", feesymbol);
-            param.put("account", account);
+            //param.put("account", account);
             param.put("receiver", receiver);
             param.put("amount", amount);
 
@@ -223,7 +222,7 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
         }
     }
 
-    public Pair<Boolean, String> getPaymentHistory(SecuXUserAccount account, String symbol, int pageIdx, int pageItemCount){
+    public Pair<Boolean, String> getPaymentHistory(SecuXUserAccount account, String token, int pageIdx, int pageItemCount){
         Log.i(TAG, "getPaymentHistory");
         if (mToken.length()==0){
             Log.e(TAG, "No token");
@@ -232,8 +231,8 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
 
         try{
             JSONObject param = new JSONObject();
-            param.put("account", account.mAccountName);
-            param.put("symbol", symbol);
+            //param.put("account", account.mAccountName);
+            param.put("symbol", token);
             param.put("page", pageIdx);
             param.put("count", pageItemCount);
             param.put("columnName", "");
@@ -257,7 +256,7 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
 
         try{
             JSONObject param = new JSONObject();
-            param.put("account", account.mAccountName);
+            //param.put("account", account.mAccountName);
             param.put("coinType", cointype);
             param.put("symbol", symboltype);
             param.put("page", page);
