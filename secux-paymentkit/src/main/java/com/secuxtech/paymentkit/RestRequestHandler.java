@@ -20,7 +20,7 @@ import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class RestRequestHandler {
+class RestRequestHandler {
 
     final public static String TAG = "secux-paymentkit";
 
@@ -221,10 +221,12 @@ public class RestRequestHandler {
             connection.setRequestProperty("Content-Length", String.valueOf(paramStr.length()));
             connection.connect();
 
-            DataOutputStream out = new DataOutputStream(connection.getOutputStream());
-            out.writeBytes(paramStr);
-            out.flush();
-            out.close();
+            if (paramStr.length() > 0) {
+                DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+                out.writeBytes(paramStr);
+                out.flush();
+                out.close();
+            }
 
             Integer responseCode = connection.getResponseCode();
             if (responseCode == HttpsURLConnection.HTTP_OK) {
