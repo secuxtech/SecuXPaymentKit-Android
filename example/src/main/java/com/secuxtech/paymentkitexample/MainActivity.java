@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
                         for(int i=0; i<mAccount.mCoinAccountArr.size(); i++){
                             SecuXCoinAccount coinAcc = mAccount.mCoinAccountArr.get(i);
 
-                            Set<Map.Entry<String, SecuXCoinTokenBalance>> entrySet = coinAcc.mSymbolBalanceMap.entrySet();
+                            Set<Map.Entry<String, SecuXCoinTokenBalance>> entrySet = coinAcc.mTokenBalanceMap.entrySet();
                             for (Map.Entry<String, SecuXCoinTokenBalance> entry: entrySet){
                                 String symbol = entry.getKey();
                                 SecuXCoinTokenBalance balance = entry.getValue();
@@ -155,8 +155,8 @@ public class MainActivity extends AppCompatActivity {
 
                     for(int i=0; i<payHisArr.size(); i++){
                         SecuXPaymentHistory history = payHisArr.get(i);
-                        Log.i(TAG, "Store = " + history.mRemark + " Pay channel =" + history.mPayChannel +
-                                " amount=" + history.mAmount + history.mCurrency + " timestamp=" + history.mTransactionTime);
+                        Log.i(TAG, "Store = " + history.mRemark + " CoinType =" + history.mCoinType +
+                                " amount=" + history.mAmount + history.mToken + " timestamp=" + history.mTransactionTime);
                     }
 
                     //Must set the callback for the SecuXPaymentManager
