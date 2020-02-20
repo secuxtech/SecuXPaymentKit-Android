@@ -33,7 +33,7 @@ import static com.secuxtech.paymentkit.RestRequestHandler.TAG;
 
 class PaymentInfo{
     String mCoinType;
-    String mSymbol;
+    String mToken;
     String mAmount;
     String mDevID;
     String mIVKey;
@@ -166,7 +166,7 @@ public class SecuXPaymentManagerBase {
             mPaymentInfo.mAmount = jsonInfo.getString("amount");
             mPaymentInfo.mDevID = jsonInfo.getString("deviceID");
             mPaymentInfo.mCoinType = jsonInfo.getString("coinType");
-            mPaymentInfo.mSymbol = jsonInfo.getString("token");
+            mPaymentInfo.mToken = jsonInfo.getString("token");
 
         }catch (Exception e){
             return false;
@@ -183,7 +183,7 @@ public class SecuXPaymentManagerBase {
             return;
         }
 
-        handlePaymentStatus(mPaymentInfo.mSymbol + " transferring...");
+        handlePaymentStatus(mPaymentInfo.mToken + " transferring...");
         try {
 
             JSONObject payRetJson = new JSONObject(payRet.second);
