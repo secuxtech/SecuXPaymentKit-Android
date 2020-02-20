@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
                 //User account operations
 
                 //Account registration
-                SecuXUserAccount newAccount = new SecuXUserAccount("maochuntest5@secuxtech.com", "0975123456", "12345678");
+                SecuXUserAccount newAccount = new SecuXUserAccount("maochuntest6@secuxtech.com", "0975123456", "12345678");
                 Pair<Boolean, String> ret = mAccountManager.registerUserAccount(newAccount);
                 if (ret.first) {
                     showMessageInMain("Account registration successful!");
@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 //Account login
-                mAccount = new SecuXUserAccount("maochuntest1@secuxtech.com", "0975123456", "12345678");
+                mAccount = new SecuXUserAccount("maochuntest6@secuxtech.com", "0975123456", "12345678");
                 ret = mAccountManager.loginUserAccount(mAccount);
 
                 if (ret.first){
