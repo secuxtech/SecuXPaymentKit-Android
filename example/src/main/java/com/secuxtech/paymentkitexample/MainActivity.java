@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private SecuXAccountManager mAccountManager = new SecuXAccountManager();
     private SecuXUserAccount    mAccount;
 
-    private String mPaymentInfo = "{\"amount\":\"10.3\", \"coinType\":\"DCT\", \"deviceID\":\"4ab10000726b\",\"token\":\"SPC\"}";
+    private String mPaymentInfo = "{\"amount\":\"15.5\", \"coinType\":\"DCT\", \"deviceID\":\"4ab10000726b\",\"token\":\"SPC\"}";
     private final Context mContext = this;
 
     private final static String TAG = "secux_paymentkit_exp";
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
                         showMessageInMain("Get account balance failed! Error: " + ret.second);
                     }
 
-                    //Get account balance for a specified coin and symbol
+                    //Get account balance for a specified coin and token
                     ret = mAccountManager.getAccountBalance(mAccount, "DCT", "SPC");
                     if (ret.first){
                         SecuXCoinAccount coinAcc = mAccount.getCoinAccount("DCT");
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
                     //Account transfer
                     SecuXTransferResult transRet = new SecuXTransferResult();
-                    ret = mAccountManager.doTransfer(mAccount, "DCT", "SPC", "SFC", "10.2", "maochuntest2", transRet);
+                    ret = mAccountManager.doTransfer(mAccount, "DCT", "SPC", "SFC", "10.5", "maochuntest2", transRet);
                     if (ret.first){
                         Log.i(TAG, "Transfer done. TxID=" + transRet.mTxID + " url="+transRet.mDetailsUrl);
                     }else{
@@ -138,13 +138,14 @@ public class MainActivity extends AppCompatActivity {
                     //Get payment history
                     ArrayList<SecuXPaymentHistory> payHisArr = new ArrayList<>();
                     int idx = 1;
+                    int hisItemCount = 10;
                     while (true){
                         int preHisItemCount = payHisArr.size();
-                        ret = mPaymentManager.getPaymentHistory(mAccount, "SPC", idx, 10, payHisArr);
+                        ret = mPaymentManager.getPaymentHistory(mAccount, "SPC", idx, hisItemCount, payHisArr);
                         if (!ret.first){
                             showMessageInMain("Get payment history failed!");
                             break;
-                        }else if (payHisArr.size() - preHisItemCount < 10){
+                        }else if (payHisArr.size() - preHisItemCount < hisItemCount){
                             Log.i(TAG, "Get all history items");
                             break;
                         }
