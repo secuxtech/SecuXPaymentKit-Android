@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class JsonUtils {
+class JsonUtils {
 
     public static Map<String, Object> jsonToMap(JSONObject json) {
         Map<String, Object> retMap = new HashMap<String, Object>();
