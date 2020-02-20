@@ -46,16 +46,16 @@ public class SecuXAccountManager {
             try {
                 JSONObject responseJson = new JSONObject(response.second);
                 String coinType = responseJson.getString("coinType");
-                String coinSymbol = responseJson.getString("symbol");
+                String token = responseJson.getString("symbol");
                 Double balance = responseJson.getDouble("balance");
                 Double formattedBalance = responseJson.getDouble("formattedBalance");
                 Double usdBlance = responseJson.getDouble("balance_usd");
 
-                SecuXCoinTokenBalance symbolBalance = new SecuXCoinTokenBalance(balance, formattedBalance, usdBlance);
-                Map<String, SecuXCoinTokenBalance> symbolBalanceMap = new HashMap<>();
-                symbolBalanceMap.put(coinSymbol, symbolBalance);
+                SecuXCoinTokenBalance tokenBalance = new SecuXCoinTokenBalance(balance, formattedBalance, usdBlance);
+                Map<String, SecuXCoinTokenBalance> tokenBalanceMap = new HashMap<>();
+                tokenBalanceMap.put(token, tokenBalance);
 
-                SecuXCoinAccount coinAccount = new SecuXCoinAccount(coinType, symbolBalanceMap);
+                SecuXCoinAccount coinAccount = new SecuXCoinAccount(coinType, tokenBalanceMap);
 
                 userAccount.mCoinAccountArr.add(coinAccount);
                 return new Pair<>(true, "");
@@ -68,8 +68,8 @@ public class SecuXAccountManager {
         return response;
     }
 
-    public Pair<Boolean, String> getAccountBalance(SecuXUserAccount userAccount, String coinType, String symbolType){
-        Pair<Boolean, String>  response = this.mSecuXSvrReqHandler.getAccountBalance(userAccount.mAccountName, coinType, symbolType);
+    public Pair<Boolean, String> getAccountBalance(SecuXUserAccount userAccount, String coinType, String token){
+        Pair<Boolean, String>  response = this.mSecuXSvrReqHandler.getAccountBalance(userAccount.mAccountName, coinType, token);
         if (response.first) {
             try {
                 JSONObject responseJson = new JSONObject(response.second);
@@ -81,7 +81,7 @@ public class SecuXAccountManager {
                 SecuXCoinAccount coinAcc = userAccount.getCoinAccount(coinType);
                 if (coinAcc != null) {
                     coinAcc.mAccountName = accName;
-                    Boolean ret = coinAcc.updateSymbolBalance(symbolType, balance, formattedBalance, usdBlance);
+                    Boolean ret = coinAcc.updateTokenBalance(token, balance, formattedBalance, usdBlance);
                     if (ret){
                         return new Pair<>(true, "");
                     }else{
@@ -107,7 +107,7 @@ public class SecuXAccountManager {
                 for (int i = 0; i < responseJsonArr.length(); i++) {
                     JSONObject itemJson = responseJsonArr.getJSONObject(i);
                     String cointype = itemJson.getString("coinType");
-                    String symboltype = itemJson.getString("symbol");
+                    String token = itemJson.getString("symbol");
                     Double balance = itemJson.getDouble("balance");
                     Double formattedBalance = itemJson.getDouble("formattedBalance");
                     Double usdBlance = itemJson.getDouble("balance_usd");
@@ -116,16 +116,16 @@ public class SecuXAccountManager {
                     SecuXCoinAccount coinAcc = userAccount.getCoinAccount(cointype);
                     if (coinAcc != null) {
                         coinAcc.mAccountName = accName;
-                        if (!coinAcc.updateSymbolBalance(symboltype, balance, formattedBalance, usdBlance)){
-                            SecuXCoinTokenBalance symbolBalance = new SecuXCoinTokenBalance(balance, formattedBalance, usdBlance);
-                            coinAcc.mSymbolBalanceMap.put(symboltype, symbolBalance);
+                        if (!coinAcc.updateTokenBalance(token, balance, formattedBalance, usdBlance)){
+                            SecuXCoinTokenBalance tokenBalance = new SecuXCoinTokenBalance(balance, formattedBalance, usdBlance);
+                            coinAcc.mTokenBalanceMap.put(token, tokenBalance);
                         }
                     }else{
-                        SecuXCoinTokenBalance symbolBalance = new SecuXCoinTokenBalance(balance, formattedBalance, usdBlance);
-                        Map<String, SecuXCoinTokenBalance> symbolBalanceMap = new HashMap<>();
-                        symbolBalanceMap.put(cointype, symbolBalance);
+                        SecuXCoinTokenBalance tokenBalance = new SecuXCoinTokenBalance(balance, formattedBalance, usdBlance);
+                        Map<String, SecuXCoinTokenBalance> tokenBalanceMap = new HashMap<>();
+                        tokenBalanceMap.put(cointype, tokenBalance);
 
-                        SecuXCoinAccount coinAccount = new SecuXCoinAccount(cointype, symbolBalanceMap);
+                        SecuXCoinAccount coinAccount = new SecuXCoinAccount(cointype, tokenBalanceMap);
                         coinAccount.mAccountName = accName;
                         userAccount.mCoinAccountArr.add(coinAccount);
                     }
@@ -140,10 +140,10 @@ public class SecuXAccountManager {
         return response;
     }
 
-    public Pair<Boolean, String> doTransfer(SecuXUserAccount account, String cointype, String symboltype, String feeSymbol,
+    public Pair<Boolean, String> doTransfer(SecuXUserAccount account, String cointype, String token, String feeSymbol,
                                             String amount, String receiver, SecuXTransferResult transRet){
 
-        Pair<Boolean, String> response = mSecuXSvrReqHandler.doTransfer(cointype, symboltype, feeSymbol, account.mAccountName, receiver, amount);
+        Pair<Boolean, String> response = mSecuXSvrReqHandler.doTransfer(cointype, token, feeSymbol, account.mAccountName, receiver, amount);
         if (response.first){
             try{
                 JSONObject transRetJson = new JSONObject(response.second);
@@ -163,10 +163,10 @@ public class SecuXAccountManager {
         return response;
     }
 
-    public Pair<Boolean, String> getTransferHistory(SecuXUserAccount account, String cointype, String symboltype,
+    public Pair<Boolean, String> getTransferHistory(SecuXUserAccount account, String cointype, String token,
                                                     int page, int count, ArrayList<SecuXTransferHistory> historyArr){
 
-        Pair<Boolean, String> response = mSecuXSvrReqHandler.getTransferHistory(account, cointype, symboltype, page, count);
+        Pair<Boolean, String> response = mSecuXSvrReqHandler.getTransferHistory(account, cointype, token, page, count);
         if (response.first){
             try {
                 JSONArray responseJsonArr = new JSONArray(response.second);
