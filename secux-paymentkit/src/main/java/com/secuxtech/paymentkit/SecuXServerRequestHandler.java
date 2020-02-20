@@ -181,7 +181,7 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
         try{
             JSONObject param = new JSONObject();
             param.put("ivKey", payInfo.mIVKey);
-            param.put("memo", storeName);
+            param.put("memo", "");
             param.put("symbol", payInfo.mToken);
             param.put("amount", payInfo.mAmount);
             param.put("coinType", payInfo.mCoinType);
