@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
 
                     for(int i=0; i<payHisArr.size(); i++){
                         SecuXPaymentHistory history = payHisArr.get(i);
-                        Log.i(TAG, "Store = " + history.mRemark + " CoinType =" + history.mCoinType +
+                        Log.i(TAG, "Store = " + history.mStoreName + " CoinType =" + history.mCoinType +
                                 " amount=" + history.mAmount + history.mToken + " timestamp=" + history.mTransactionTime);
                     }
 
