@@ -12,15 +12,15 @@ public class SecuXCoinAccount {
     public String mCoinType = "";
     public String mAccountName = "";
 
-    public Map<String, SecuXCoinTokenBalance> mSymbolBalanceMap = new HashMap<>();
+    public Map<String, SecuXCoinTokenBalance> mTokenBalanceMap = new HashMap<>();
 
     SecuXCoinAccount(String coinType, Map<String, SecuXCoinTokenBalance> symbolBalance){
         mCoinType = coinType;
-        mSymbolBalanceMap.putAll(symbolBalance);
+        mTokenBalanceMap.putAll(symbolBalance);
     }
 
-    public boolean updateSymbolBalance(String symbolType, Double balance, Double formattedBalance, Double usdBalance){
-        SecuXCoinTokenBalance accBalance = mSymbolBalanceMap.get(symbolType);
+    public boolean updateTokenBalance(String token, Double balance, Double formattedBalance, Double usdBalance){
+        SecuXCoinTokenBalance accBalance = mTokenBalanceMap.get(token);
         if (accBalance != null) {
             accBalance.mBalance = balance;
             accBalance.mFormattedBalance = formattedBalance;
@@ -31,10 +31,11 @@ public class SecuXCoinAccount {
         return false;
     }
 
-    public SecuXCoinTokenBalance getBalance(String symbolType){
-        Set<Map.Entry<String, SecuXCoinTokenBalance>> entrySet = mSymbolBalanceMap.entrySet();
+
+    public SecuXCoinTokenBalance getBalance(String token){
+        Set<Map.Entry<String, SecuXCoinTokenBalance>> entrySet = mTokenBalanceMap.entrySet();
         for (Map.Entry<String, SecuXCoinTokenBalance> entry: entrySet){
-            if (entry.getKey().compareTo(symbolType)==0){
+            if (entry.getKey().compareTo(token)==0){
                 return entry.getValue();
             }
         }
