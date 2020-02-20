@@ -38,8 +38,8 @@ public class SecuXPaymentManager extends SecuXPaymentManagerBase{
         doPayment(account, storeName, paymentInfo);
     }
 
-    public Pair<Boolean, String> getPaymentHistory(SecuXUserAccount account, String symbol, int pageNum, int count, ArrayList<SecuXPaymentHistory> historyArr){
-        Pair<Boolean, String> ret = this.mSecuXSvrReqHandler.getPaymentHistory(account, symbol, pageNum, count);
+    public Pair<Boolean, String> getPaymentHistory(SecuXUserAccount account, String token, int pageNum, int count, ArrayList<SecuXPaymentHistory> historyArr){
+        Pair<Boolean, String> ret = this.mSecuXSvrReqHandler.getPaymentHistory(account, token, pageNum, count);
         if (ret.first){
             try{
                 JSONArray hisJsonArr = new JSONArray(ret.second);
