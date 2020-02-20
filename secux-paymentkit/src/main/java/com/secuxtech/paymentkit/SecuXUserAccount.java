@@ -17,11 +17,18 @@ public class SecuXUserAccount {
     public ArrayList<SecuXCoinAccount> mCoinAccountArr = new ArrayList<>();
 
     public SecuXUserAccount(String email, String phone, String password){
-        mAccountName = email.substring(0, email.indexOf('@'));
+        mAccountName = email;
         mPassword = password;
         mEmail = email;
-        mAlias = mAccountName;
+        mAlias = email.substring(0, email.indexOf('@'));
         mPhoneNum = phone;
+    }
+
+    public SecuXUserAccount(String email, String password){
+        mAccountName = email;
+        mPassword = password;
+        mEmail = email;
+        mAlias = email.substring(0, email.indexOf('@'));
     }
     
     public SecuXCoinAccount getCoinAccount(String coinType){
