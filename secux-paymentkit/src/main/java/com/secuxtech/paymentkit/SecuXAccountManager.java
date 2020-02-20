@@ -76,9 +76,11 @@ public class SecuXAccountManager {
                 Double balance = responseJson.getDouble("balance");
                 Double formattedBalance = responseJson.getDouble("formattedBalance");
                 Double usdBlance = responseJson.getDouble("balance_usd");
+                String accName = responseJson.getString("accountName");
 
                 SecuXCoinAccount coinAcc = userAccount.getCoinAccount(coinType);
                 if (coinAcc != null) {
+                    coinAcc.mAccountName = accName;
                     Boolean ret = coinAcc.updateSymbolBalance(symbolType, balance, formattedBalance, usdBlance);
                     if (ret){
                         return new Pair<>(true, "");
@@ -109,9 +111,11 @@ public class SecuXAccountManager {
                     Double balance = itemJson.getDouble("balance");
                     Double formattedBalance = itemJson.getDouble("formattedBalance");
                     Double usdBlance = itemJson.getDouble("balance_usd");
+                    String accName = itemJson.getString("accountName");
 
                     SecuXCoinAccount coinAcc = userAccount.getCoinAccount(cointype);
                     if (coinAcc != null) {
+                        coinAcc.mAccountName = accName;
                         if (!coinAcc.updateSymbolBalance(symboltype, balance, formattedBalance, usdBlance)){
                             SecuXCoinTokenBalance symbolBalance = new SecuXCoinTokenBalance(balance, formattedBalance, usdBlance);
                             coinAcc.mSymbolBalanceMap.put(symboltype, symbolBalance);
@@ -122,6 +126,7 @@ public class SecuXAccountManager {
                         symbolBalanceMap.put(cointype, symbolBalance);
 
                         SecuXCoinAccount coinAccount = new SecuXCoinAccount(cointype, symbolBalanceMap);
+                        coinAccount.mAccountName = accName;
                         userAccount.mCoinAccountArr.add(coinAccount);
                     }
                 }
