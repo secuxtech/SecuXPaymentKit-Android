@@ -18,7 +18,8 @@ public class SecuXPaymentHistory {
     public String   mExchangeStoreID    = "";
     public String   mPayPlatform        = "";
     public String   mPayChannel         = "";
-    public String   mCurrency           = "";
+    public String   mCoinType           = "";
+    public String   mToken              = "";
     public Double   mAmount             = 0.0;
     public String   mTransactionStatus  = "";
     public String   mTransactionTime    = "";
@@ -50,7 +51,8 @@ public class SecuXPaymentHistory {
 
             mPayPlatform = hisJson.getString("payPlatform");
             mPayChannel = hisJson.getString("payChannel");
-            mCurrency = hisJson.getString("currency");
+            mCoinType = hisJson.getString("coinType");
+            mToken = hisJson.getString("symbol");
             mAmount = hisJson.getDouble("amount");
             mTransactionStatus = hisJson.getString("transactionStatus");
             mTransactionTime = hisJson.getString("transactionTime");
