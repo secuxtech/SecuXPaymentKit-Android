@@ -4,6 +4,7 @@ package com.secuxtech.paymentkit;
  * Created by maochuns.sun@gmail.com on 2020-02-12
  */
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -19,7 +20,7 @@ public class SecuXCoinAccount {
         mTokenBalanceMap.putAll(symbolBalance);
     }
 
-    public boolean updateTokenBalance(String token, Double balance, Double formattedBalance, Double usdBalance){
+    public boolean updateTokenBalance(String token, BigDecimal balance, BigDecimal formattedBalance, BigDecimal usdBalance){
         SecuXCoinTokenBalance accBalance = mTokenBalanceMap.get(token);
         if (accBalance != null) {
             accBalance.mBalance = balance;
