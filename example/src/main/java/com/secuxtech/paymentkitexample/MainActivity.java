@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
                                 String symbol = entry.getKey();
                                 SecuXCoinTokenBalance balance = entry.getValue();
 
-                                Log.i(TAG, "Symbol=" + symbol + " balance=" + Double.valueOf(balance.mFormattedBalance) + " usdBalance=" + Double.valueOf(balance.mUSDBalance));
+                                Log.i(TAG, "Symbol=" + symbol + " balance=" + balance.mFormattedBalance.toString() + " usdBalance=" + balance.mUSDBalance.toString());
                             }
                         }
                     }else{
@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
                     if (ret.first){
                         SecuXCoinAccount coinAcc = mAccount.getCoinAccount("DCT");
                         SecuXCoinTokenBalance balance = coinAcc.getBalance("SPC");
-                        Log.i(TAG, "balance=" +  Double.valueOf(balance.mFormattedBalance) + " usdBalance=" + Double.valueOf(balance.mUSDBalance));
+                        Log.i(TAG, "balance=" +  balance.mFormattedBalance.toString() + " usdBalance=" + balance.mUSDBalance.toString());
 
                     }else{
                         showMessageInMain("Get account balance failed! Error: " + ret.second);
