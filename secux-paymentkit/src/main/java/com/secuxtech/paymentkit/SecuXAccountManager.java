@@ -26,10 +26,19 @@ public class SecuXAccountManager {
             try{
                 JSONObject responseJson = new JSONObject(response.second);
                 String coinType = responseJson.getString("coinType");
-                String coinSymbol = responseJson.getString("symbol");
-                Double balance = responseJson.getDouble("balance");
-                Double formattedBalance = responseJson.getDouble("formattedBalance");
-                Double usdBlance = responseJson.getDouble("balance_usd");
+                String token = responseJson.getString("symbol");
+
+                BigDecimal balance = new BigDecimal(responseJson.getString("balance"));
+                BigDecimal formattedBalance = new BigDecimal(responseJson.getString("formattedBalance"));
+                BigDecimal usdBlance = new BigDecimal(responseJson.getString("balance_usd"));
+
+                SecuXCoinTokenBalance tokenBalance = new SecuXCoinTokenBalance(balance, formattedBalance, usdBlance);
+                Map<String, SecuXCoinTokenBalance> tokenBalanceMap = new HashMap<>();
+                tokenBalanceMap.put(token, tokenBalance);
+
+                SecuXCoinAccount coinAccount = new SecuXCoinAccount(coinType, tokenBalanceMap);
+
+                userAccount.mCoinAccountArr.add(coinAccount);
 
                 return new Pair<>(true, "");
 
