@@ -9,6 +9,7 @@ import androidx.core.util.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,9 +48,10 @@ public class SecuXAccountManager {
                 JSONObject responseJson = new JSONObject(response.second);
                 String coinType = responseJson.getString("coinType");
                 String token = responseJson.getString("symbol");
-                Double balance = responseJson.getDouble("balance");
-                Double formattedBalance = responseJson.getDouble("formattedBalance");
-                Double usdBlance = responseJson.getDouble("balance_usd");
+
+                BigDecimal balance = new BigDecimal(responseJson.getString("balance"));
+                BigDecimal formattedBalance = new BigDecimal(responseJson.getString("formattedBalance"));
+                BigDecimal usdBlance = new BigDecimal(responseJson.getString("balance_usd"));
 
                 SecuXCoinTokenBalance tokenBalance = new SecuXCoinTokenBalance(balance, formattedBalance, usdBlance);
                 Map<String, SecuXCoinTokenBalance> tokenBalanceMap = new HashMap<>();
@@ -73,9 +75,9 @@ public class SecuXAccountManager {
         if (response.first) {
             try {
                 JSONObject responseJson = new JSONObject(response.second);
-                Double balance = responseJson.getDouble("balance");
-                Double formattedBalance = responseJson.getDouble("formattedBalance");
-                Double usdBlance = responseJson.getDouble("balance_usd");
+                BigDecimal balance = new BigDecimal(responseJson.getString("balance"));
+                BigDecimal formattedBalance = new BigDecimal(responseJson.getString("formattedBalance"));
+                BigDecimal usdBlance = new BigDecimal(responseJson.getString("balance_usd"));
                 String accName = responseJson.getString("accountName");
 
                 SecuXCoinAccount coinAcc = userAccount.getCoinAccount(coinType);
@@ -108,9 +110,9 @@ public class SecuXAccountManager {
                     JSONObject itemJson = responseJsonArr.getJSONObject(i);
                     String cointype = itemJson.getString("coinType");
                     String token = itemJson.getString("symbol");
-                    Double balance = itemJson.getDouble("balance");
-                    Double formattedBalance = itemJson.getDouble("formattedBalance");
-                    Double usdBlance = itemJson.getDouble("balance_usd");
+                    BigDecimal balance = new BigDecimal(itemJson.getString("balance"));
+                    BigDecimal formattedBalance = new BigDecimal(itemJson.getString("formattedBalance"));
+                    BigDecimal usdBlance = new BigDecimal(itemJson.getString("balance_usd"));
                     String accName = itemJson.getString("accountName");
 
                     SecuXCoinAccount coinAcc = userAccount.getCoinAccount(cointype);
