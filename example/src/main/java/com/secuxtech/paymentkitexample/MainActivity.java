@@ -124,8 +124,8 @@ public class MainActivity extends AppCompatActivity {
                     for(int i=0; i<historyArr.size(); i++){
                         SecuXTransferHistory hisItem = historyArr.get(i);
                         Log.i(TAG, "Address="+hisItem.mAddress + " type="+hisItem.mTxType +
-                                " amount="+hisItem.mFormattedAmount + " usd="+hisItem.mAmountUsd +
-                                " timestamp="+hisItem.mTimestamp);
+                                " amount="+hisItem.mFormattedAmount.toString() + " usd="+hisItem.mAmountUsd.toString() +
+                                " timestamp="+hisItem.mTimestamp.toString());
                     }
                 }else{
                     showMessageInMain("Login failed! Error: " + ret.second);
@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
                     for(int i=0; i<payHisArr.size(); i++){
                         SecuXPaymentHistory history = payHisArr.get(i);
                         Log.i(TAG, "Store = " + history.mStoreName + " CoinType =" + history.mCoinType +
-                                " amount=" + history.mAmount + history.mToken + " timestamp=" + history.mTransactionTime);
+                                " amount=" + history.mAmount.toString() + history.mToken + " timestamp=" + history.mTransactionTime);
                     }
 
                     //Must set the callback for the SecuXPaymentManager
