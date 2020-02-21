@@ -1,15 +1,17 @@
 package com.secuxtech.paymentkit;
 
+import java.math.BigDecimal;
+
 /**
  * Created by maochuns.sun@gmail.com on 2020-02-19
  */
 public class SecuXCoinTokenBalance {
 
-    public Double mBalance = Double.valueOf(0);
-    public Double mFormattedBalance = Double.valueOf(0);
-    public Double mUSDBalance = Double.valueOf(0);
+    public BigDecimal mBalance;
+    public BigDecimal mFormattedBalance;
+    public BigDecimal mUSDBalance;
 
-    SecuXCoinTokenBalance(Double balance, Double formattedBalance, Double usdBalance){
+    SecuXCoinTokenBalance(BigDecimal balance, BigDecimal formattedBalance, BigDecimal usdBalance){
         mBalance = balance;
         mFormattedBalance = formattedBalance;
         mUSDBalance = usdBalance;
