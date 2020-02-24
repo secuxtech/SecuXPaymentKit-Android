@@ -25,6 +25,7 @@ public class SecuXPaymentHistory {
     public String       mTransactionStatus  = "";
     public String       mTransactionTime    = "";
     public String       mRemark             = "";
+    public String       mDetailsUrl         = "";
 
     SecuXPaymentHistory(JSONObject hisJson) throws Exception{
         try{
@@ -44,6 +45,7 @@ public class SecuXPaymentHistory {
             mTransactionStatus = hisJson.getString("transactionStatus");
             mTransactionTime = hisJson.getString("transactionTime");
             mRemark = hisJson.getString("remark");
+            mDetailsUrl = hisJson.getString("detailsUrl");
 
         }catch (Exception e){
             throw e;
