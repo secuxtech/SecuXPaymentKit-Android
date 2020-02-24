@@ -24,7 +24,7 @@ class RestRequestHandler {
 
     final public static String TAG = "secux-paymentkit";
 
-    private Integer mConnectTimeout = 5000;
+    private Integer mConnectTimeout = 10000;
     private Boolean mLogReply = false;
 
     public void processURLRequest(){
