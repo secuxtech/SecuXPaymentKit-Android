@@ -17,6 +17,8 @@ import android.widget.Toast;
 
 import com.secuxtech.paymentkit.*;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
@@ -27,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private SecuXAccountManager mAccountManager = new SecuXAccountManager();
     private SecuXUserAccount    mAccount;
 
-    private String mPaymentInfo = "{\"amount\":\"15.5\", \"coinType\":\"DCT\", \"deviceID\":\"4ab10000726b\",\"token\":\"SPC\"}";
+    private String mPaymentInfo = "{\"amount\":\"15.5\", \"coinType\":\"DCT\", \"deviceID\":\"41193D32D520E114A3730D458F4389B5B9A7114D\",\"token\":\"SPC\"}";
     private final Context mContext = this;
 
     private final static String TAG = "secux_paymentkit_exp";
@@ -51,8 +53,8 @@ public class MainActivity extends AppCompatActivity {
 
                 //Account registration
                 SecuXUserAccount newAccount = new SecuXUserAccount("maochuntest6@secuxtech.com", "0975123456", "12345678");
-                Pair<Boolean, String> ret = mAccountManager.registerUserAccount(newAccount);
-                if (ret.first) {
+                Pair<Integer, String> ret = mAccountManager.registerUserAccount(newAccount);
+                if (ret.first==SecuXServerRequestHandler.SecuXRequestOK) {
                     showMessageInMain("Account registration successful!");
                 }else {
                     showMessageInMain("registration failed! Error: " + ret.second);
@@ -62,10 +64,10 @@ public class MainActivity extends AppCompatActivity {
                 mAccount = new SecuXUserAccount("maochuntest6@secuxtech.com", "0975123456", "12345678");
                 ret = mAccountManager.loginUserAccount(mAccount);
 
-                if (ret.first){
+                if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
                     //Get account all balance
                     ret = mAccountManager.getAccountBalance(mAccount);
-                    if (ret.first){
+                    if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
                         for(int i=0; i<mAccount.mCoinAccountArr.size(); i++){
                             SecuXCoinAccount coinAcc = mAccount.mCoinAccountArr.get(i);
 
@@ -83,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
                     //Get account balance for a specified coin and token
                     ret = mAccountManager.getAccountBalance(mAccount, "DCT", "SPC");
-                    if (ret.first){
+                    if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
                         SecuXCoinAccount coinAcc = mAccount.getCoinAccount("DCT");
                         SecuXCoinTokenBalance balance = coinAcc.getBalance("SPC");
                         Log.i(TAG, "balance=" +  balance.mFormattedBalance.toString() + " usdBalance=" + balance.mUSDBalance.toString());
@@ -95,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
                     //Account transfer
                     SecuXTransferResult transRet = new SecuXTransferResult();
                     ret = mAccountManager.doTransfer(mAccount, "DCT", "SPC", "SFC", "10.5", "maochuntest2", transRet);
-                    if (ret.first){
+                    if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
                         Log.i(TAG, "Transfer done. TxID=" + transRet.mTxID + " url="+transRet.mDetailsUrl);
                     }else{
                        showMessageInMain("Transfer failed! Error: " + ret.second);
@@ -110,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
                         int preHisItemCount = historyArr.size();
                         ret = mAccountManager.getTransferHistory(mAccount, "DCT", "SPC", idx, historyCount, historyArr);
 
-                        if (!ret.first){
+                        if (ret.first!=SecuXServerRequestHandler.SecuXRequestOK){
                             showMessageInMain("Get account transfer history failed! Error: " + ret.second);
                             break;
                         }else if (historyArr.size() - preHisItemCount < historyCount){
@@ -134,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
 
                 //Payment operations
                 ret = mAccountManager.loginUserAccount(mAccount);
-                if (ret.first) {
+                if (ret.first==SecuXServerRequestHandler.SecuXRequestOK) {
                     //Get payment history
                     ArrayList<SecuXPaymentHistory> payHisArr = new ArrayList<>();
                     int idx = 1;
@@ -142,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
                     while (true){
                         int preHisItemCount = payHisArr.size();
                         ret = mPaymentManager.getPaymentHistory(mAccount, "SPC", idx, hisItemCount, payHisArr);
-                        if (!ret.first){
+                        if (ret.first!=SecuXServerRequestHandler.SecuXRequestOK){
                             showMessageInMain("Get payment history failed!");
                             break;
                         }else if (payHisArr.size() - preHisItemCount < hisItemCount){
@@ -162,8 +164,23 @@ public class MainActivity extends AppCompatActivity {
                     //Must set the callback for the SecuXPaymentManager
                     mPaymentManager.setSecuXPaymentManagerCallback(mPaymentMgrCallback);
 
-                    //Use SecuXPaymentManager to get store info.
-                    mPaymentManager.getStoreInfo(getBaseContext(), mPaymentInfo);
+                    //User SecuXPaymentManager to get valid payment info. from the QRCode string;
+                    ret = mPaymentManager.getDeviceInfo("DCT", "SPC", "15.5", "41193D32D520E114A3730D458F4389B5B9A7114D");
+                    if (ret.first==SecuXServerRequestHandler.SecuXRequestOK) {
+
+                        try{
+                            JSONObject replyJson = new JSONObject(ret.second);
+                            String devID = replyJson.getString("deviceID");
+                            mPaymentInfo = ret.second;
+
+                            //Use SecuXPaymentManager to get store info.
+                            mPaymentManager.getStoreInfo(devID);
+                        }catch (Exception e){
+                            Log.i(TAG, "Invalid store info "+e.getLocalizedMessage());
+                        }
+
+
+                    }
                 }
 
 
@@ -232,6 +249,21 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+        }
+
+        //Called when the user login account token is timeout. Just login in the account again.
+        @Override
+        public void userAccountUnauthorized(){
+            Log.i(TAG, "account unauthorized login again");
+
+            mAccount = new SecuXUserAccount("maochuntest6@secuxtech.com", "0975123456", "12345678");
+            Pair<Integer, String> ret = mAccountManager.loginUserAccount(mAccount);
+
+            if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
+                Log.i(TAG, "Login successfully");
+            }else{
+                Log.i(TAG, "Login failed!");
+            }
         }
 
     };
