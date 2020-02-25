@@ -27,6 +27,10 @@ class RestRequestHandler {
     private Integer mConnectTimeout = 10000;
     private Boolean mLogReply = false;
 
+    public static final Integer SecuXRequestOK = 0;
+    public static final Integer SecuXRequestFailed = 1;
+    public static final Integer SecuXRequestUnauthorized = 2;
+
     public void processURLRequest(){
 
         HttpURLConnection connection = null;
@@ -66,8 +70,8 @@ class RestRequestHandler {
         }
     }
 
-    public Pair<Boolean, String> processGetRequest(String path, String authorization) {
-        Boolean result = false;
+    public Pair<Integer, String> processGetRequest(String path, String authorization) {
+        Integer result = SecuXRequestFailed;
         String response = "";
         try {
             URL url = new URL(path);
@@ -83,7 +87,7 @@ class RestRequestHandler {
             if (responseCode == HttpsURLConnection.HTTP_OK) {
                 InputStream in = connection.getInputStream();
                 response = getResponse(in);
-
+                result = SecuXRequestOK;
                 if (mLogReply) {
                     Log.i(TAG, response);
                 }
@@ -102,8 +106,8 @@ class RestRequestHandler {
         return new Pair<>(result, response);
     }
 
-    public Pair<Boolean, String> processPostRequest(String path) {
-        Boolean result = false;
+    public Pair<Integer, String> processPostRequest(String path) {
+        Integer result = SecuXRequestFailed;
         String response = "";
         try {
             URL url = new URL(path);
@@ -124,7 +128,7 @@ class RestRequestHandler {
             if (responseCode == HttpsURLConnection.HTTP_OK) {
                 InputStream in = connection.getInputStream();
                 response = getResponse(in);
-                result = true;
+                result = SecuXRequestOK;
 
                 if (mLogReply) {
                     Log.i(TAG, response);
@@ -144,9 +148,9 @@ class RestRequestHandler {
         return new Pair<>(result, response);
     }
 
-    public Pair<Boolean, String> processPostRequest(String path, JSONObject param) {
+    public Pair<Integer, String> processPostRequest(String path, JSONObject param) {
         String paramStr = param.toString();
-        Boolean result = false;
+        Integer result = SecuXRequestFailed;
         String response = "";
         try {
             URL url = new URL(path);
@@ -173,7 +177,7 @@ class RestRequestHandler {
             if (responseCode == HttpsURLConnection.HTTP_OK) {
                 InputStream in = connection.getInputStream();
                 response = getResponse(in);
-                result = true;
+                result = SecuXRequestOK;
 
                 if (mLogReply) {
                     Log.i(TAG, response);
@@ -196,14 +200,14 @@ class RestRequestHandler {
         return new Pair<>(result, response);
     }
 
-    Pair<Boolean, String> processPostRequest(String path, JSONObject param, String token) {
+    Pair<Integer, String> processPostRequest(String path, JSONObject param, String token) {
         return processPostRequest(path, param, token, mConnectTimeout);
     }
 
-    public Pair<Boolean, String> processPostRequest(String path, JSONObject param, String token, Integer timeout) {
+    public Pair<Integer, String> processPostRequest(String path, JSONObject param, String token, Integer timeout) {
         String paramStr = param.toString();
-        Boolean result = false;
-        String response;
+        Integer result = SecuXRequestFailed;
+        String response = "";
         try {
             URL url = new URL(path);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -232,11 +236,14 @@ class RestRequestHandler {
             if (responseCode == HttpsURLConnection.HTTP_OK) {
                 InputStream in = connection.getInputStream();
                 response = getResponse(in);
-                result = true;
+                result = SecuXRequestOK;
 
                 if (mLogReply) {
                     Log.i(TAG, response);
                 }
+            }else if (responseCode == HttpsURLConnection.HTTP_UNAUTHORIZED){
+                response = "Unauthorized";
+                result = SecuXRequestUnauthorized;
             }else{
                 InputStream errIn = connection.getErrorStream();
                 response = getResponse(errIn);
