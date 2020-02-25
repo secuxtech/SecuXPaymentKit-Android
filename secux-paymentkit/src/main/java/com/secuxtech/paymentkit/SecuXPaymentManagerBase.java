@@ -75,11 +75,7 @@ public class SecuXPaymentManagerBase {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            Thread.sleep(1000);
-                        }catch (Exception e){
 
-                        }
                         sendInfoToDevice();
                     }
                 }).start();
@@ -108,33 +104,32 @@ public class SecuXPaymentManagerBase {
 
     }
 
-    protected Boolean getPaymentStoreInfo(String paymentInfo){
+    protected Integer getPaymentStoreInfo(String deviceID){
         Log.i(TAG, "getStoreInfo");
 
         mStoreName = "";
         mStoreLogo = null;
 
-        if (getPaymentInfo(paymentInfo)) {
+        Pair<Integer, String> response = this.mSecuXSvrReqHandler.getStoreInfo(deviceID);
+        if (response.first==SecuXServerRequestHandler.SecuXRequestOK) {
+            try {
+                JSONObject storeInfoJson = new JSONObject(response.second);
+                mStoreName = storeInfoJson.getString("name");
 
-            Pair<Boolean, String> response = this.mSecuXSvrReqHandler.getStoreInfo(mPaymentInfo.mDevID);
-            if (response.first) {
-                try {
-                    JSONObject storeInfoJson = new JSONObject(response.second);
-                    mStoreName = storeInfoJson.getString("name");
+                String base64String = storeInfoJson.getString("icon");
+                String base64Image = base64String.split(",")[1];
+                byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
+                mStoreLogo = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
 
-                    String base64String = storeInfoJson.getString("icon");
-                    String base64Image = base64String.split(",")[1];
-                    byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
-                    mStoreLogo = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-
-                    return true;
-                } catch (Exception e) {
-                    Log.e(TAG, e.getLocalizedMessage());
-                }
+                return SecuXServerRequestHandler.SecuXRequestOK;
+            } catch (Exception e) {
+                Log.e(TAG, e.getLocalizedMessage());
             }
+        }else{
+            return response.first;
         }
 
-        return false;
+        return SecuXServerRequestHandler.SecuXRequestFailed;
     }
 
 
@@ -166,7 +161,7 @@ public class SecuXPaymentManagerBase {
             mPaymentInfo.mAmount = jsonInfo.getString("amount");
             mPaymentInfo.mDevID = jsonInfo.getString("deviceID");
             mPaymentInfo.mCoinType = jsonInfo.getString("coinType");
-            mPaymentInfo.mToken = jsonInfo.getString("token");
+            mPaymentInfo.mToken = jsonInfo.getString("symbol");
 
         }catch (Exception e){
             return false;
@@ -178,8 +173,12 @@ public class SecuXPaymentManagerBase {
 
         Log.i(TAG, "sendInfoToDevice");
 
-        Pair<Boolean, String> payRet = mSecuXSvrReqHandler.doPayment(mAccount.mAccountName, mStoreName, mPaymentInfo);
-        if (!payRet.first){
+        Pair<Integer, String> payRet = mSecuXSvrReqHandler.doPayment(mAccount.mAccountName, mStoreName, mPaymentInfo);
+        if (payRet.first == SecuXServerRequestHandler.SecuXRequestUnauthorized){
+            handleAccountUnauthorized();
+            return;
+        }else if (payRet.first != SecuXServerRequestHandler.SecuXRequestOK){
+            handlePaymentDone(false, payRet.second);
             return;
         }
 
@@ -227,6 +226,7 @@ public class SecuXPaymentManagerBase {
                 }
             });
 
+
             ((Activity)mContext).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -258,6 +258,13 @@ public class SecuXPaymentManagerBase {
         Log.i(TAG, "Payment done " + String.valueOf(ret));
         if (mCallback!=null){
             mCallback.paymentDone(ret, errorMsg);
+        }
+    }
+
+    protected void handleAccountUnauthorized(){
+        Log.i(TAG, "Account unauthorized!");
+        if (mCallback!=null){
+            mCallback.userAccountUnauthorized();
         }
     }
 
