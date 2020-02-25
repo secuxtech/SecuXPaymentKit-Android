@@ -19,10 +19,10 @@ public class SecuXAccountManager {
     private static String TAG = "secux-paymentkit";
     private SecuXServerRequestHandler mSecuXSvrReqHandler = new SecuXServerRequestHandler();
 
-    public Pair<Boolean, String> registerUserAccount(SecuXUserAccount userAccount){
-        Pair<Boolean, String> response = mSecuXSvrReqHandler.userRegister(userAccount.mAccountName, userAccount.mPassword, userAccount.mEmail, userAccount.mAlias, userAccount.mPhoneNum);
+    public Pair<Integer, String> registerUserAccount(SecuXUserAccount userAccount){
+        Pair<Integer, String> response = mSecuXSvrReqHandler.userRegister(userAccount.mAccountName, userAccount.mPassword, userAccount.mEmail, userAccount.mAlias, userAccount.mPhoneNum);
 
-        if (response.first){
+        if (response.first==SecuXServerRequestHandler.SecuXRequestOK){
             try{
                 JSONObject responseJson = new JSONObject(response.second);
                 String coinType = responseJson.getString("coinType");
@@ -40,19 +40,19 @@ public class SecuXAccountManager {
 
                 userAccount.mCoinAccountArr.add(coinAccount);
 
-                return new Pair<>(true, "");
+                return new Pair<>(SecuXServerRequestHandler.SecuXRequestOK, "");
 
             }catch (Exception e){
-                return new Pair<>(false, "Invalid return value");
+                return new Pair<>(SecuXServerRequestHandler.SecuXRequestFailed, "Invalid return value");
             }
         }
 
         return response;
     }
 
-    public Pair<Boolean, String> loginUserAccount(SecuXUserAccount userAccount){
-        Pair<Boolean, String>  response = mSecuXSvrReqHandler.userLogin(userAccount.mAccountName, userAccount.mPassword);
-        if (response.first) {
+    public Pair<Integer, String> loginUserAccount(SecuXUserAccount userAccount){
+        Pair<Integer, String>  response = mSecuXSvrReqHandler.userLogin(userAccount.mAccountName, userAccount.mPassword);
+        if (response.first==SecuXServerRequestHandler.SecuXRequestOK) {
             try {
                 JSONObject responseJson = new JSONObject(response.second);
                 String coinType = responseJson.getString("coinType");
@@ -69,19 +69,19 @@ public class SecuXAccountManager {
                 SecuXCoinAccount coinAccount = new SecuXCoinAccount(coinType, tokenBalanceMap);
 
                 userAccount.mCoinAccountArr.add(coinAccount);
-                return new Pair<>(true, "");
+                return new Pair<>(SecuXServerRequestHandler.SecuXRequestOK, "");
 
             } catch (Exception e) {
-                return new Pair<>(false, "Invalid return value");
+                return new Pair<>(SecuXServerRequestHandler.SecuXRequestFailed, "Invalid return value");
             }
         }
 
         return response;
     }
 
-    public Pair<Boolean, String> getAccountBalance(SecuXUserAccount userAccount, String coinType, String token){
-        Pair<Boolean, String>  response = this.mSecuXSvrReqHandler.getAccountBalance(userAccount.mAccountName, coinType, token);
-        if (response.first) {
+    public Pair<Integer, String> getAccountBalance(SecuXUserAccount userAccount, String coinType, String token){
+        Pair<Integer, String>  response = this.mSecuXSvrReqHandler.getAccountBalance(userAccount.mAccountName, coinType, token);
+        if (response.first==SecuXServerRequestHandler.SecuXRequestOK) {
             try {
                 JSONObject responseJson = new JSONObject(response.second);
                 BigDecimal balance = new BigDecimal(responseJson.getString("balance"));
@@ -94,25 +94,25 @@ public class SecuXAccountManager {
                     coinAcc.mAccountName = accName;
                     Boolean ret = coinAcc.updateTokenBalance(token, balance, formattedBalance, usdBlance);
                     if (ret){
-                        return new Pair<>(true, "");
+                        return new Pair<>(SecuXServerRequestHandler.SecuXRequestOK, "");
                     }else{
-                        return new Pair<>(false, "Invalid symbol type");
+                        return new Pair<>(SecuXServerRequestHandler.SecuXRequestFailed, "Invalid token type");
                     }
                 }else{
-                    return new Pair<>(false, "Invalid coin type");
+                    return new Pair<>(SecuXServerRequestHandler.SecuXRequestFailed, "Invalid coin type");
                 }
 
             } catch (Exception e) {
-                return new Pair<>(false, "Invalid return value");
+                return new Pair<>(SecuXServerRequestHandler.SecuXRequestFailed, "Invalid return value");
             }
         }
 
         return response;
     }
 
-    public Pair<Boolean, String>  getAccountBalance(SecuXUserAccount userAccount){
-        Pair<Boolean, String>  response = this.mSecuXSvrReqHandler.getAccountBalance(userAccount.mAccountName);
-        if (response.first) {
+    public Pair<Integer, String>  getAccountBalance(SecuXUserAccount userAccount){
+        Pair<Integer, String>  response = this.mSecuXSvrReqHandler.getAccountBalance(userAccount.mAccountName);
+        if (response.first==SecuXServerRequestHandler.SecuXRequestOK) {
             try {
                 JSONArray responseJsonArr = new JSONArray(response.second);
                 for (int i = 0; i < responseJsonArr.length(); i++) {
@@ -142,43 +142,43 @@ public class SecuXAccountManager {
                     }
                 }
 
-                return new Pair<>(true, "");
+                return new Pair<>(SecuXServerRequestHandler.SecuXRequestOK, "");
 
             } catch (Exception e) {
-                return new Pair<>(false, "Invalid return value");
+                return new Pair<>(SecuXServerRequestHandler.SecuXRequestFailed, "Invalid return value");
             }
         }
         return response;
     }
 
-    public Pair<Boolean, String> doTransfer(SecuXUserAccount account, String cointype, String token, String feeSymbol,
+    public Pair<Integer, String> doTransfer(SecuXUserAccount account, String cointype, String token, String feeSymbol,
                                             String amount, String receiver, SecuXTransferResult transRet){
 
-        Pair<Boolean, String> response = mSecuXSvrReqHandler.doTransfer(cointype, token, feeSymbol, account.mAccountName, receiver, amount);
-        if (response.first){
+        Pair<Integer, String> response = mSecuXSvrReqHandler.doTransfer(cointype, token, feeSymbol, account.mAccountName, receiver, amount);
+        if (response.first==SecuXServerRequestHandler.SecuXRequestOK){
             try{
                 JSONObject transRetJson = new JSONObject(response.second);
                 int statusCode = transRetJson.getInt("statusCode");
                 String statusDesc = transRetJson.getString("statusDesc");
 
                 if (statusCode != 200){
-                    return new Pair<>(false, statusDesc);
+                    return new Pair<>(SecuXServerRequestHandler.SecuXRequestFailed, statusDesc);
                 }
                 transRet.mTxID = transRetJson.getString("txId");
                 transRet.mDetailsUrl = transRetJson.getString("detailsUrl");
-                return new Pair<>(true, "");
+                return new Pair<>(SecuXServerRequestHandler.SecuXRequestOK, "");
             }catch (Exception e){
-                return new Pair<>(false, "Invalid return value");
+                return new Pair<>(SecuXServerRequestHandler.SecuXRequestFailed, "Invalid return value");
             }
         }
         return response;
     }
 
-    public Pair<Boolean, String> getTransferHistory(SecuXUserAccount account, String cointype, String token,
+    public Pair<Integer, String> getTransferHistory(SecuXUserAccount account, String cointype, String token,
                                                     int page, int count, ArrayList<SecuXTransferHistory> historyArr){
 
-        Pair<Boolean, String> response = mSecuXSvrReqHandler.getTransferHistory(account, cointype, token, page, count);
-        if (response.first){
+        Pair<Integer, String> response = mSecuXSvrReqHandler.getTransferHistory(account, cointype, token, page, count);
+        if (response.first==SecuXServerRequestHandler.SecuXRequestOK){
             try {
                 JSONArray responseJsonArr = new JSONArray(response.second);
                 for (int i = 0; i < responseJsonArr.length(); i++) {
@@ -186,9 +186,9 @@ public class SecuXAccountManager {
                     SecuXTransferHistory history = new SecuXTransferHistory(itemJson);
                     historyArr.add(history);
                 }
-                return new Pair<>(true, "");
+                return new Pair<>(SecuXServerRequestHandler.SecuXRequestOK, "");
             }catch (Exception e){
-                return new Pair<>(true, "Invalid return value");
+                return new Pair<>(SecuXServerRequestHandler.SecuXRequestFailed, "Invalid return value");
             }
         }
 
