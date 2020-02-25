@@ -19,14 +19,16 @@ public class SecuXPaymentManager extends SecuXPaymentManagerBase{
         this.mCallback = callback;
     }
 
-    public void getStoreInfo(Context context, final String paymentInfo){
-        this.mContext = context;
+    public void getStoreInfo(final String devID){
         new Thread(new Runnable() {
             @Override
             public void run() {
-            if (getPaymentStoreInfo(paymentInfo)){
+            Integer ret = getPaymentStoreInfo(devID);
+            if (ret == SecuXServerRequestHandler.SecuXRequestOK){
                 handleGetStoreInfoDone(true);
-            }else{
+            }else if (ret == SecuXServerRequestHandler.SecuXRequestUnauthorized){
+                handleAccountUnauthorized();
+            } else{
                 handleGetStoreInfoDone(false);
             }
             }
@@ -38,9 +40,13 @@ public class SecuXPaymentManager extends SecuXPaymentManagerBase{
         doPayment(account, storeName, paymentInfo);
     }
 
-    public Pair<Boolean, String> getPaymentHistory(SecuXUserAccount account, String token, int pageNum, int count, ArrayList<SecuXPaymentHistory> historyArr){
-        Pair<Boolean, String> ret = this.mSecuXSvrReqHandler.getPaymentHistory(account, token, pageNum, count);
-        if (ret.first){
+    public Pair<Integer, String> getDeviceInfo(String coinType, String token, String amount, String deviceID){
+        return this.mSecuXSvrReqHandler.getDeviceInfo(coinType, token, amount, deviceID);
+    }
+
+    public Pair<Integer, String> getPaymentHistory(SecuXUserAccount account, String token, int pageNum, int count, ArrayList<SecuXPaymentHistory> historyArr){
+        Pair<Integer, String> ret = this.mSecuXSvrReqHandler.getPaymentHistory(account, token, pageNum, count);
+        if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
             try{
                 JSONArray hisJsonArr = new JSONArray(ret.second);
                 for(int i=0; i<hisJsonArr.length(); i++){
@@ -48,9 +54,9 @@ public class SecuXPaymentManager extends SecuXPaymentManagerBase{
                     SecuXPaymentHistory historyItem = new SecuXPaymentHistory(itemJson);
                     historyArr.add(historyItem);
                 }
-                return new Pair<>(true, "");
+                return new Pair<>(SecuXServerRequestHandler.SecuXRequestOK, "");
             }catch (Exception e){
-                return new Pair<>(false, "Invalid return value");
+                return new Pair<>(SecuXServerRequestHandler.SecuXRequestFailed, "Invalid return value");
             }
         }
         return ret;
