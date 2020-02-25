@@ -5,7 +5,6 @@ package com.secuxtech.paymentkit;
  */
 
 import android.graphics.Bitmap;
-import android.media.Image;
 
 public abstract class SecuXPaymentManagerCallback {
 
@@ -18,6 +17,10 @@ public abstract class SecuXPaymentManagerCallback {
     }
 
     public void getStoreInfoDone(final boolean ret, final String storeName, final Bitmap storeLogo){
+
+    }
+
+    public void userAccountUnauthorized(){
 
     }
 
