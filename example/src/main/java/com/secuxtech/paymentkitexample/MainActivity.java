@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private SecuXAccountManager mAccountManager = new SecuXAccountManager();
     private SecuXUserAccount    mAccount;
 
-    private String mPaymentInfo = "{\"amount\":\"15.5\", \"coinType\":\"DCT\", \"deviceID\":\"41193D32D520E114A3730D458F4389B5B9A7114D\",\"token\":\"SPC\"}";
+    private String mPaymentInfo = "{\"amount\":\"16.5\", \"coinType\":\"DCT\", \"deviceID\":\"41193D32D520E114A3730D458F4389B5B9A7114D\",\"token\":\"SPC\"}";
     private final Context mContext = this;
 
     private final static String TAG = "secux_paymentkit_exp";
@@ -51,6 +51,9 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 //User account operations
 
+                mAccount = new SecuXUserAccount("maochuntest6@secuxtech.com", "0975123456", "12345678");
+
+                /*
                 //Account registration
                 SecuXUserAccount newAccount = new SecuXUserAccount("maochuntest6@secuxtech.com", "0975123456", "12345678");
                 Pair<Integer, String> ret = mAccountManager.registerUserAccount(newAccount);
@@ -61,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 //Account login
-                mAccount = new SecuXUserAccount("maochuntest6@secuxtech.com", "0975123456", "12345678");
+
                 ret = mAccountManager.loginUserAccount(mAccount);
 
                 if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
@@ -134,8 +137,10 @@ public class MainActivity extends AppCompatActivity {
                 }
 
 
+                 */
+
                 //Payment operations
-                ret = mAccountManager.loginUserAccount(mAccount);
+                Pair<Integer, String> ret = mAccountManager.loginUserAccount(mAccount);
                 if (ret.first==SecuXServerRequestHandler.SecuXRequestOK) {
                     //Get payment history
                     ArrayList<SecuXPaymentHistory> payHisArr = new ArrayList<>();
@@ -165,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
                     mPaymentManager.setSecuXPaymentManagerCallback(mPaymentMgrCallback);
 
                     //User SecuXPaymentManager to get valid payment info. from the QRCode string;
-                    ret = mPaymentManager.getDeviceInfo("DCT", "SPC", "15.5", "41193D32D520E114A3730D458F4389B5B9A7114D");
+                    ret = mPaymentManager.getDeviceInfo("DCT", "SPC", "16.5", "41193D32D520E114A3730D458F4389B5B9A7114D");
                     if (ret.first==SecuXServerRequestHandler.SecuXRequestOK) {
 
                         try{
@@ -232,7 +237,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void getStoreInfoDone(final boolean ret, final String storeName, final Bitmap storeLogo){
             Log.i("secux-paymentkit-exp", "Get store info. done ret=" + String.valueOf(ret) + ",name=" + storeName);
-            runOnUiThread(new Runnable() {
+
+            new Thread(new Runnable() {
                 @Override
                 public void run() {
                     if (ret){
@@ -242,12 +248,18 @@ public class MainActivity extends AppCompatActivity {
                         mPaymentManager.doPayment(mContext, mAccount, name, mPaymentInfo);
 
                     }else{
-                        Toast toast = Toast.makeText(mContext, "Get store info. failed!", Toast.LENGTH_LONG);
-                        toast.setGravity(Gravity.CENTER,0,0);
-                        toast.show();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast toast = Toast.makeText(mContext, "Get store info. failed!", Toast.LENGTH_LONG);
+                                toast.setGravity(Gravity.CENTER,0,0);
+                                toast.show();
+                            }
+                        });
+
                     }
                 }
-            });
+            }).start();
 
         }
 
