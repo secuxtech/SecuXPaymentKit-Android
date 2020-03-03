@@ -8,14 +8,16 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.Image;
+
 import android.util.Base64;
 import android.util.Log;
+
 
 import androidx.core.util.Pair;
 
 import org.json.JSONObject;
 
+/*
 import com.secux.payment.sdk.BoxError;
 import com.secux.payment.sdk.DiscoveredDevice;
 import com.secux.payment.sdk.MachineIoControlParam;
@@ -26,9 +28,21 @@ import com.secux.payment.sdk.listener.OnGetDataMapCompleteListener;
 import com.secux.payment.sdk.listener.OnScanCompleteListener;
 import com.secux.payment.sdk.listener.OnSendStringCompleteListener;
 
+
+ */
+
+
+
+import com.secuxtech.paymentdevicekit.MachineIoControlParam;
+import com.secuxtech.paymentdevicekit.PaymentPeripheralManager;
+import com.secuxtech.paymentdevicekit.SecuXBLEManager;
+
+
 import java.util.Map;
 import java.util.Set;
 
+import static com.secuxtech.paymentdevicekit.PaymentPeripheralManager.SecuX_Peripheral_Operation_OK;
+import static com.secuxtech.paymentdevicekit.PaymentPeripheralManager.SecuX_Peripheral_Operation_fail;
 import static com.secuxtech.paymentkit.RestRequestHandler.TAG;
 
 class PaymentInfo{
@@ -56,6 +70,7 @@ public class SecuXPaymentManagerBase {
     SecuXPaymentManagerBase(){
         Log.i(TAG, "SecuXPaymentManagerBase");
 
+        /*
         mPaymentPeripheralManager.setOnErrorListener(new OnErrorListener() {
             @Override
             public void onError(BoxError boxError) {
@@ -82,6 +97,8 @@ public class SecuXPaymentManagerBase {
 
             }
         });
+
+         */
         /*
         mPaymentPeripheralManager.setOnScanCompleteListener(new OnScanCompleteListener() {
             @Override
@@ -95,12 +112,15 @@ public class SecuXPaymentManagerBase {
         });
 
          */
+        /*
         mPaymentPeripheralManager.setOnConnectCompleteListener(new OnConnectCompleteListener() {
             @Override
             public void onConnectComplete(DiscoveredDevice discoveredDevice) {
                 Log.i(TAG, "peripheral manager onConnectComplete");
             }
         });
+
+         */
 
     }
 
@@ -140,14 +160,20 @@ public class SecuXPaymentManagerBase {
         this.mAccount = account;
         this.mStoreName = storeName;
 
-        int scanTimeout = 5;
-        int connectionTimeout = 5;
+        int scanTimeout = 5000;
+        int connectionTimeout = 5000;
         int rssi = -80;
 
         if (getPaymentInfo(paymentInfo)){
             handlePaymentStatus("Device connecting ...");
 
-            mPaymentPeripheralManager.doPeripheralAuthenticityVerification(mContext, scanTimeout, mPaymentInfo.mDevID, rssi, connectionTimeout);
+            android.util.Pair<Integer, String> ret = mPaymentPeripheralManager.doGetIVKey(mContext, scanTimeout, mPaymentInfo.mDevID, rssi, connectionTimeout);
+            if (ret.first == SecuX_Peripheral_Operation_OK){
+                mPaymentInfo.mIVKey = ret.second;
+                sendInfoToDevice();
+            }else{
+                handlePaymentDone(false, ret.second);
+            }
 
         }else {
             handlePaymentDone(false, "Wrong payment information");
@@ -171,7 +197,7 @@ public class SecuXPaymentManagerBase {
 
     protected void sendInfoToDevice(){
 
-        Log.i(TAG, "sendInfoToDevice");
+        Log.i(TAG, "sendInfoToDevice amount=" + mPaymentInfo.mAmount);
 
         Pair<Integer, String> payRet = mSecuXSvrReqHandler.doPayment(mAccount.mAccountName, mStoreName, mPaymentInfo);
         if (payRet.first == SecuXServerRequestHandler.SecuXRequestUnauthorized){
@@ -219,6 +245,8 @@ public class SecuXPaymentManagerBase {
             final byte[] encryptedData = Base64.decode(encryptedStr, Base64.DEFAULT);
 
             handlePaymentStatus("Device verifying...");
+
+            /*
             mPaymentPeripheralManager.setOnGetDataMapCompleteListener(new OnGetDataMapCompleteListener() {
                 @Override
                 public void onComplete(final Map<String, Object> dataMap) {
@@ -226,13 +254,19 @@ public class SecuXPaymentManagerBase {
                 }
             });
 
+             */
 
+            mPaymentPeripheralManager.doPaymentVerification(encryptedData, machineIoControlParam);
+
+            /*
             ((Activity)mContext).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                    mPaymentPeripheralManager.doPaymentVerification(encryptedData, machineIoControlParam);
                 }
             });
+
+             */
 
         }catch (Exception e){
             Log.e(TAG, e.getLocalizedMessage());
