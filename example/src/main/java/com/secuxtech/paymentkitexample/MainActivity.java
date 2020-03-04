@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
 
                 mAccount = new SecuXUserAccount("maochuntest6@secuxtech.com", "0975123456", "12345678");
 
-                /*
+
                 //Account registration
                 SecuXUserAccount newAccount = new SecuXUserAccount("maochuntest6@secuxtech.com", "0975123456", "12345678");
                 Pair<Integer, String> ret = mAccountManager.registerUserAccount(newAccount);
@@ -136,11 +136,8 @@ public class MainActivity extends AppCompatActivity {
                     showMessageInMain("Login failed! Error: " + ret.second);
                 }
 
-
-                 */
-
                 //Payment operations
-                Pair<Integer, String> ret = mAccountManager.loginUserAccount(mAccount);
+                ret = mAccountManager.loginUserAccount(mAccount);
                 if (ret.first==SecuXServerRequestHandler.SecuXRequestOK) {
                     //Get payment history
                     ArrayList<SecuXPaymentHistory> payHisArr = new ArrayList<>();
@@ -170,12 +167,12 @@ public class MainActivity extends AppCompatActivity {
                     mPaymentManager.setSecuXPaymentManagerCallback(mPaymentMgrCallback);
 
                     //User SecuXPaymentManager to get valid payment info. from the QRCode string;
-                    ret = mPaymentManager.getDeviceInfo("DCT", "SPC", "16.5", "41193D32D520E114A3730D458F4389B5B9A7114D");
+                    ret = mPaymentManager.getDeviceInfo("{\"amount\":\"12\", \"coinType\":\"DCT\", \"token\":\"SPC\",\"deviceIDhash\":\"04793D374185C2167A420D250FFF93F05156350C\"}");
                     if (ret.first==SecuXServerRequestHandler.SecuXRequestOK) {
 
                         try{
                             JSONObject replyJson = new JSONObject(ret.second);
-                            String devID = replyJson.getString("deviceID");
+                            String devID = replyJson.getString("deviceIDhash");
                             mPaymentInfo = ret.second;
 
                             //Use SecuXPaymentManager to get store info.
@@ -183,7 +180,6 @@ public class MainActivity extends AppCompatActivity {
                         }catch (Exception e){
                             Log.i(TAG, "Invalid store info "+e.getLocalizedMessage());
                         }
-
 
                     }
                 }

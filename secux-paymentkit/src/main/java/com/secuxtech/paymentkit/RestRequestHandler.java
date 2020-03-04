@@ -193,6 +193,7 @@ class RestRequestHandler {
             connection.disconnect();
 
         } catch (Exception e) {
+            Log.i(TAG, "connection timeout = " + mConnectTimeout);
             e.printStackTrace();
             response = e.getMessage();
         }

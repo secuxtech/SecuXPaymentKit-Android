@@ -158,7 +158,7 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
 
         try{
             JSONObject param = new JSONObject();
-            param.put("deviceId", devID);
+            param.put("deviceIDhash", devID);
 
             Pair<Integer, String> response = this.processPostRequest(getStoreUrl, param, mToken);
 
@@ -272,6 +272,7 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
         }
     }
 
+    /*
     public Pair<Integer, String> getDeviceInfo(String coinType, String token, String amount, String deviceID){
         if (mToken.length()==0){
             Log.e(TAG, "No token");
@@ -286,6 +287,24 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
             param.put("amount", amount);
             param.put("deviceID", deviceID);
 
+            Pair<Integer, String> response = this.processPostRequest(getDeviceInfoUrl, param, mToken);
+            return response;
+
+        }catch (Exception e){
+            Log.e(TAG, e.getMessage());
+            return new Pair<>(SecuXRequestFailed, e.getLocalizedMessage());
+        }
+    }
+    */
+
+    public Pair<Integer, String> getDeviceInfo(String paymentInfo){
+        if (mToken.length()==0){
+            Log.e(TAG, "No token");
+            return new Pair<>(SecuXRequestFailed, "No token");
+        }
+
+        try{
+            JSONObject param = new JSONObject(paymentInfo);
             Pair<Integer, String> response = this.processPostRequest(getDeviceInfoUrl, param, mToken);
             return response;
 

@@ -47,8 +47,8 @@ public class SecuXPaymentManager extends SecuXPaymentManagerBase{
 
     }
 
-    public Pair<Integer, String> getDeviceInfo(String coinType, String token, String amount, String deviceID){
-        return this.mSecuXSvrReqHandler.getDeviceInfo(coinType, token, amount, deviceID);
+    public Pair<Integer, String> getDeviceInfo(String paymentInfo){
+        return this.mSecuXSvrReqHandler.getDeviceInfo(paymentInfo);
     }
 
     public Pair<Integer, String> getPaymentHistory(SecuXUserAccount account, String token, int pageNum, int count, ArrayList<SecuXPaymentHistory> historyArr){

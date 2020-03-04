@@ -155,7 +155,7 @@ public class SecuXPaymentManagerBase {
 
     protected void doPayment(SecuXUserAccount account, String storeName, String paymentInfo){
 
-        Log.e(TAG, "doPayment");
+        Log.i(TAG, "doPayment");
 
         this.mAccount = account;
         this.mStoreName = storeName;
@@ -165,6 +165,7 @@ public class SecuXPaymentManagerBase {
         int rssi = -80;
 
         if (getPaymentInfo(paymentInfo)){
+            Log.i(TAG, "pay to device " + mPaymentInfo.mDevID);
             handlePaymentStatus("Device connecting ...");
 
             android.util.Pair<Integer, String> ret = mPaymentPeripheralManager.doGetIVKey(mContext, scanTimeout, mPaymentInfo.mDevID, rssi, connectionTimeout);
@@ -187,7 +188,7 @@ public class SecuXPaymentManagerBase {
             mPaymentInfo.mAmount = jsonInfo.getString("amount");
             mPaymentInfo.mDevID = jsonInfo.getString("deviceID");
             mPaymentInfo.mCoinType = jsonInfo.getString("coinType");
-            mPaymentInfo.mToken = jsonInfo.getString("symbol");
+            mPaymentInfo.mToken = jsonInfo.getString("token");
 
         }catch (Exception e){
             return false;
