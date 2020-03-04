@@ -37,7 +37,14 @@ public class SecuXPaymentManager extends SecuXPaymentManagerBase{
 
     public void doPayment(Context context, final SecuXUserAccount account, final String storeName, final String paymentInfo){
         this.mContext = context;
-        doPayment(account, storeName, paymentInfo);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                doPayment(account, storeName, paymentInfo);
+            }
+        }).start();
+
     }
 
     public Pair<Integer, String> getDeviceInfo(String coinType, String token, String amount, String deviceID){

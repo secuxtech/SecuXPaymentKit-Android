@@ -256,7 +256,12 @@ public class SecuXPaymentManagerBase {
 
              */
 
-            mPaymentPeripheralManager.doPaymentVerification(encryptedData, machineIoControlParam);
+            android.util.Pair<Integer, String> verifyRet = mPaymentPeripheralManager.doPaymentVerification(encryptedData, machineIoControlParam);
+            if (verifyRet.first == SecuX_Peripheral_Operation_OK){
+                handlePaymentDone(true, "");
+            }else{
+                handlePaymentDone(false, verifyRet.second);
+            }
 
             /*
             ((Activity)mContext).runOnUiThread(new Runnable() {
