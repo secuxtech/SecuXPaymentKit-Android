@@ -9,6 +9,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import android.os.SystemClock;
 import android.util.Base64;
 import android.util.Log;
 
@@ -198,7 +199,7 @@ public class SecuXPaymentManagerBase {
 
     protected void sendInfoToDevice(){
 
-        Log.i(TAG, "sendInfoToDevice amount=" + mPaymentInfo.mAmount);
+        Log.i(TAG, SystemClock.uptimeMillis() + " sendInfoToDevice amount=" + mPaymentInfo.mAmount);
 
         Pair<Integer, String> payRet = mSecuXSvrReqHandler.doPayment(mAccount.mAccountName, mStoreName, mPaymentInfo);
         if (payRet.first == SecuXServerRequestHandler.SecuXRequestUnauthorized){
@@ -213,7 +214,7 @@ public class SecuXPaymentManagerBase {
         try {
 
             JSONObject payRetJson = new JSONObject(payRet.second);
-            Log.i(TAG, "Send server request done " + payRetJson.toString());
+            Log.i(TAG, SystemClock.uptimeMillis() + " Send server request done " + payRetJson.toString());
 
             int statusCode = payRetJson.getInt("statusCode");
             String statusDesc = payRetJson.getString("statusDesc");
