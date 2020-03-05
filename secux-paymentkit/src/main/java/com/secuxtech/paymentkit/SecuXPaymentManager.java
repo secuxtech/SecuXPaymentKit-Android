@@ -35,13 +35,13 @@ public class SecuXPaymentManager extends SecuXPaymentManagerBase{
         }).start();
     }
 
-    public void doPayment(Context context, final SecuXUserAccount account, final String storeName, final String paymentInfo){
+    public void doPayment(Context context, final SecuXUserAccount account, final String storeInfo, final String paymentInfo){
         this.mContext = context;
 
         new Thread(new Runnable() {
             @Override
             public void run() {
-                doPayment(account, storeName, paymentInfo);
+                doPayment(account, storeInfo, paymentInfo);
             }
         }).start();
 

@@ -231,17 +231,17 @@ public class MainActivity extends AppCompatActivity {
 
         //Called when get store information is completed. Returns store name and store logo.
         @Override
-        public void getStoreInfoDone(final boolean ret, final String storeName, final Bitmap storeLogo){
-            Log.i("secux-paymentkit-exp", "Get store info. done ret=" + String.valueOf(ret) + ",name=" + storeName);
+        public void getStoreInfoDone(final boolean ret, final String storeInfo, final Bitmap storeLogo){
+            Log.i("secux-paymentkit-exp", "Get store info. done ret=" + String.valueOf(ret) + ",info=" + storeInfo);
 
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     if (ret){
-                        final String name = storeName;
+                        //final String name = storeName;
 
                         //Use SecuXManager to do payment, must call in main thread
-                        mPaymentManager.doPayment(mContext, mAccount, name, mPaymentInfo);
+                        mPaymentManager.doPayment(mContext, mAccount, storeInfo, mPaymentInfo);
 
                     }else{
                         runOnUiThread(new Runnable() {
@@ -252,7 +252,6 @@ public class MainActivity extends AppCompatActivity {
                                 toast.show();
                             }
                         });
-
                     }
                 }
             }).start();

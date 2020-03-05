@@ -16,7 +16,7 @@ public abstract class SecuXPaymentManagerCallback {
 
     }
 
-    public void getStoreInfoDone(final boolean ret, final String storeName, final Bitmap storeLogo){
+    public void getStoreInfoDone(final boolean ret, final String storeInfo, final Bitmap storeLogo){
 
     }
 

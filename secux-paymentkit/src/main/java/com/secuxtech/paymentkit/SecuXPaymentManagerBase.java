@@ -54,6 +54,13 @@ class PaymentInfo{
     String mIVKey;
 }
 
+class PaymentDevConfigInfo{
+    String mName;
+    int mScanTimeout;
+    int mConnTimeout;
+    int mRssi;
+}
+
 public class SecuXPaymentManagerBase {
 
     protected SecuXPaymentManagerCallback mCallback = null;
@@ -64,8 +71,9 @@ public class SecuXPaymentManagerBase {
 
     private SecuXUserAccount mAccount = null;
     private PaymentInfo mPaymentInfo = new PaymentInfo();
+    private PaymentDevConfigInfo mPaymentDevConfigInfo = new PaymentDevConfigInfo();
 
-    private String mStoreName = "";
+    private String mStoreInfo = "";
     private Bitmap mStoreLogo = null;
 
     SecuXPaymentManagerBase(){
@@ -128,19 +136,22 @@ public class SecuXPaymentManagerBase {
     protected Integer getPaymentStoreInfo(String deviceID){
         Log.i(TAG, "getStoreInfo");
 
-        mStoreName = "";
+        mStoreInfo = "";
         mStoreLogo = null;
 
         Pair<Integer, String> response = this.mSecuXSvrReqHandler.getStoreInfo(deviceID);
         if (response.first==SecuXServerRequestHandler.SecuXRequestOK) {
             try {
-                JSONObject storeInfoJson = new JSONObject(response.second);
-                mStoreName = storeInfoJson.getString("name");
+                mStoreInfo = response.second;
+                JSONObject storeInfoJson = new JSONObject(mStoreInfo);
 
                 String base64String = storeInfoJson.getString("icon");
                 String base64Image = base64String.split(",")[1];
                 byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
                 mStoreLogo = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+
+                storeInfoJson.remove("icon");
+                mStoreInfo = storeInfoJson.toString();
 
                 return SecuXServerRequestHandler.SecuXRequestOK;
             } catch (Exception e) {
@@ -154,22 +165,18 @@ public class SecuXPaymentManagerBase {
     }
 
 
-    protected void doPayment(SecuXUserAccount account, String storeName, String paymentInfo){
+    protected void doPayment(SecuXUserAccount account, String storeInfo, String paymentInfo){
 
         Log.i(TAG, "doPayment");
 
         this.mAccount = account;
-        this.mStoreName = storeName;
 
-        int scanTimeout = 5000;
-        int connectionTimeout = 5000;
-        int rssi = -80;
-
-        if (getPaymentInfo(paymentInfo)){
+        if (getPaymentInfo(paymentInfo) && getPaymentDevConfigInfo(storeInfo)){
             Log.i(TAG, "pay to device " + mPaymentInfo.mDevID);
             handlePaymentStatus("Device connecting ...");
 
-            android.util.Pair<Integer, String> ret = mPaymentPeripheralManager.doGetIVKey(mContext, scanTimeout, mPaymentInfo.mDevID, rssi, connectionTimeout);
+            android.util.Pair<Integer, String> ret = mPaymentPeripheralManager.doGetIVKey(mContext, mPaymentDevConfigInfo.mScanTimeout,
+                    mPaymentInfo.mDevID, mPaymentDevConfigInfo.mRssi, mPaymentDevConfigInfo.mConnTimeout);
             if (ret.first == SecuX_Peripheral_Operation_OK){
                 mPaymentInfo.mIVKey = ret.second;
                 sendInfoToDevice();
@@ -197,11 +204,25 @@ public class SecuXPaymentManagerBase {
         return true;
     }
 
+    protected boolean getPaymentDevConfigInfo(String storeInfo){
+        try {
+            JSONObject jsonInfo = new JSONObject(storeInfo);
+            mPaymentDevConfigInfo.mName = jsonInfo.getString("name");
+            mPaymentDevConfigInfo.mConnTimeout = jsonInfo.getInt("connectionTimeout");
+            mPaymentDevConfigInfo.mScanTimeout = jsonInfo.getInt("scanTimeout");
+            mPaymentDevConfigInfo.mRssi = jsonInfo.getInt("checkRSSI");
+
+        }catch (Exception e){
+            return false;
+        }
+        return true;
+    }
+
     protected void sendInfoToDevice(){
 
         Log.i(TAG, SystemClock.uptimeMillis() + " sendInfoToDevice amount=" + mPaymentInfo.mAmount);
 
-        Pair<Integer, String> payRet = mSecuXSvrReqHandler.doPayment(mAccount.mAccountName, mStoreName, mPaymentInfo);
+        Pair<Integer, String> payRet = mSecuXSvrReqHandler.doPayment(mAccount.mAccountName, mPaymentDevConfigInfo.mName, mPaymentInfo);
         if (payRet.first == SecuXServerRequestHandler.SecuXRequestUnauthorized){
             handleAccountUnauthorized();
             return;
@@ -282,9 +303,9 @@ public class SecuXPaymentManagerBase {
     }
 
     protected void handleGetStoreInfoDone(final boolean ret){
-        Log.i(TAG, "Get store info. done " + String.valueOf(ret) + " " + mStoreName);
+        Log.i(TAG, "Get store info. done " + String.valueOf(ret) + " " + mStoreInfo);
         if (mCallback!=null){
-            mCallback.getStoreInfoDone(ret, mStoreName, mStoreLogo);
+            mCallback.getStoreInfoDone(ret, mStoreInfo, mStoreLogo);
         }
     }
 
