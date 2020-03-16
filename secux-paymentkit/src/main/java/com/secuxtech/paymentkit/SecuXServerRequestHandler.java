@@ -223,7 +223,33 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
         }
     }
 
-    public Pair<Integer, String> getPaymentHistory(SecuXUserAccount account, String token, int pageIdx, int pageItemCount){
+    public Pair<Integer, String> getPaymentHistory(String token, String transactionCode){
+        Log.i(TAG, "getPaymentHistory " + token + " " + transactionCode);
+        if (mToken.length()==0){
+            Log.e(TAG, "No token");
+            return new Pair<>(SecuXRequestFailed, "No token");
+        }
+
+        try{
+            JSONObject param = new JSONObject();
+            //param.put("account", account.mAccountName);
+            param.put("symbol", token);
+            param.put("page", 1);
+            param.put("count", 10);
+            param.put("columnName", "");
+            param.put("sorting", "");
+            param.put("transactionCode", transactionCode);
+
+            Pair<Integer, String> response = this.processPostRequest(paymentHistoryUrl, param, mToken);
+            return response;
+
+        }catch (Exception e){
+            Log.e(TAG, e.getMessage());
+            return new Pair<>(SecuXRequestFailed, e.getLocalizedMessage());
+        }
+    }
+
+    public Pair<Integer, String> getPaymentHistory(String token, int pageIdx, int pageItemCount){
         Log.i(TAG, "getPaymentHistory");
         if (mToken.length()==0){
             Log.e(TAG, "No token");
@@ -248,7 +274,7 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
         }
     }
 
-    public Pair<Integer, String> getTransferHistory(SecuXUserAccount account, String cointype, String symboltype, int page, int count){
+    public Pair<Integer, String> getTransferHistory(String cointype, String symboltype, int page, int count){
         Log.i(TAG, "getTransferHistory");
         if (mToken.length()==0){
             Log.e(TAG, "No token");

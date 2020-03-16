@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
                     int hisItemCount = 10;
                     while (true){
                         int preHisItemCount = payHisArr.size();
-                        ret = mPaymentManager.getPaymentHistory(mAccount, "SPC", idx, hisItemCount, payHisArr);
+                        ret = mPaymentManager.getPaymentHistory("SPC", idx, hisItemCount, payHisArr);
                         if (ret.first!=SecuXServerRequestHandler.SecuXRequestOK){
                             showMessageInMain("Get payment history failed!");
                             break;

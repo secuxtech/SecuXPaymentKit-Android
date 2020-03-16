@@ -51,8 +51,8 @@ public class SecuXPaymentManager extends SecuXPaymentManagerBase{
         return this.mSecuXSvrReqHandler.getDeviceInfo(paymentInfo);
     }
 
-    public Pair<Integer, String> getPaymentHistory(SecuXUserAccount account, String token, int pageNum, int count, ArrayList<SecuXPaymentHistory> historyArr){
-        Pair<Integer, String> ret = this.mSecuXSvrReqHandler.getPaymentHistory(account, token, pageNum, count);
+    public Pair<Integer, String> getPaymentHistory(String token, int pageNum, int count, ArrayList<SecuXPaymentHistory> historyArr){
+        Pair<Integer, String> ret = this.mSecuXSvrReqHandler.getPaymentHistory(token, pageNum, count);
         if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
             try{
                 JSONArray hisJsonArr = new JSONArray(ret.second);
@@ -62,6 +62,24 @@ public class SecuXPaymentManager extends SecuXPaymentManagerBase{
                     historyArr.add(historyItem);
                 }
                 return new Pair<>(SecuXServerRequestHandler.SecuXRequestOK, "");
+            }catch (Exception e){
+                return new Pair<>(SecuXServerRequestHandler.SecuXRequestFailed, "Invalid return value");
+            }
+        }
+        return ret;
+    }
+
+    public Pair<Integer, String> getPaymentHistory(String token, String transactionCode, SecuXPaymentHistory paymentHistory){
+        Pair<Integer, String> ret = this.mSecuXSvrReqHandler.getPaymentHistory(token, transactionCode);
+        if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
+            try{
+                JSONArray hisJsonArr = new JSONArray(ret.second);
+                for(int i=0; i<hisJsonArr.length(); i++){
+                    JSONObject itemJson = hisJsonArr.getJSONObject(i);
+                    paymentHistory.copyFrom(itemJson);
+                    return new Pair<>(SecuXServerRequestHandler.SecuXRequestOK, "");
+                }
+                return new Pair<>(SecuXServerRequestHandler.SecuXRequestFailed, "No payment item");
             }catch (Exception e){
                 return new Pair<>(SecuXServerRequestHandler.SecuXRequestFailed, "Invalid return value");
             }

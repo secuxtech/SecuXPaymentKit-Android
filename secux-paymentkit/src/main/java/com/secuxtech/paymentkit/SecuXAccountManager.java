@@ -177,7 +177,7 @@ public class SecuXAccountManager {
     public Pair<Integer, String> getTransferHistory(SecuXUserAccount account, String cointype, String token,
                                                     int page, int count, ArrayList<SecuXTransferHistory> historyArr){
 
-        Pair<Integer, String> response = mSecuXSvrReqHandler.getTransferHistory(account, cointype, token, page, count);
+        Pair<Integer, String> response = mSecuXSvrReqHandler.getTransferHistory(cointype, token, page, count);
         if (response.first==SecuXServerRequestHandler.SecuXRequestOK){
             try {
                 JSONArray responseJsonArr = new JSONArray(response.second);
