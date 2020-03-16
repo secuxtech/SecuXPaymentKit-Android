@@ -29,6 +29,10 @@ public class SecuXPaymentHistory {
     public String       mRemark             = "";
     public String       mDetailsUrl         = "";
 
+    SecuXPaymentHistory(){
+
+    }
+
     SecuXPaymentHistory(JSONObject hisJson) throws Exception{
         try{
             mID = hisJson.getInt("id");
