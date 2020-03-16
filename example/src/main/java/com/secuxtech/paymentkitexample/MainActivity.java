@@ -203,10 +203,21 @@ public class MainActivity extends AppCompatActivity {
         //Called when payment is completed. Returns payment result and error message.
         @Override
         public void paymentDone(final boolean ret, final String transactionCode, final String errorMsg) {
+            if (ret){
+                SecuXPaymentHistory payhistory = new SecuXPaymentHistory();
+                Pair<Integer, String> hisret = mPaymentManager.getPaymentHistory("SPC", transactionCode, payhistory);
+                if (hisret.first == SecuXServerRequestHandler.SecuXRequestOK) {
+
+                }
+            }
+
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (ret){
+
+
+
                         Toast toast = Toast.makeText(mContext, "Payment successful! " + transactionCode, Toast.LENGTH_LONG);
                         toast.setGravity(Gravity.CENTER,0,0);
                         toast.show();
