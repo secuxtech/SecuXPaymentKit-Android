@@ -29,7 +29,7 @@ public class SecuXPaymentHistory {
     public String       mRemark             = "";
     public String       mDetailsUrl         = "";
 
-    SecuXPaymentHistory(){
+    public SecuXPaymentHistory(){
 
     }
 
