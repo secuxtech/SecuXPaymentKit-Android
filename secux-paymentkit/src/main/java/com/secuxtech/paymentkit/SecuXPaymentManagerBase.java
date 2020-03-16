@@ -267,6 +267,8 @@ public class SecuXPaymentManagerBase {
             String encryptedStr = payRetJson.getString("encryptedTransaction");
             final byte[] encryptedData = Base64.decode(encryptedStr, Base64.DEFAULT);
 
+            String transCode = payRetJson.getString("transactionCode");
+
             handlePaymentStatus("Device verifying...");
 
             /*
@@ -281,7 +283,7 @@ public class SecuXPaymentManagerBase {
 
             android.util.Pair<Integer, String> verifyRet = mPaymentPeripheralManager.doPaymentVerification(encryptedData, machineIoControlParam);
             if (verifyRet.first == SecuX_Peripheral_Operation_OK){
-                handlePaymentDone(true, "");
+                handlePaymentDone(true, transCode);
             }else{
                 handlePaymentDone(false, verifyRet.second);
             }
@@ -319,7 +321,13 @@ public class SecuXPaymentManagerBase {
     protected void handlePaymentDone(final boolean ret, final String errorMsg){
         Log.i(TAG, "Payment done " + String.valueOf(ret));
         if (mCallback!=null){
-            mCallback.paymentDone(ret, errorMsg);
+            String transCode = "";
+            String error = errorMsg;
+            if (ret){
+                transCode = errorMsg;
+                error = "";
+            }
+            mCallback.paymentDone(ret, transCode, error);
         }
     }
 

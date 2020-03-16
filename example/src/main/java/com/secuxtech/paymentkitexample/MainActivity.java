@@ -50,9 +50,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 //User account operations
-
-                mAccount = new SecuXUserAccount("maochuntest6@secuxtech.com", "0975123456", "12345678");
-
+                mAccount = new SecuXUserAccount("maochuntest9@secuxtech.com", "0975123456", "12345678");
 
                 //Account registration
                 SecuXUserAccount newAccount = new SecuXUserAccount("maochuntest6@secuxtech.com", "0975123456", "12345678");
@@ -153,7 +151,6 @@ public class MainActivity extends AppCompatActivity {
                             Log.i(TAG, "Get all history items");
                             break;
                         }
-
                         idx += 1;
                     }
 
@@ -205,12 +202,12 @@ public class MainActivity extends AppCompatActivity {
 
         //Called when payment is completed. Returns payment result and error message.
         @Override
-        public void paymentDone(final boolean ret, final String errorMsg) {
+        public void paymentDone(final boolean ret, final String transactionCode, final String errorMsg) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (ret){
-                        Toast toast = Toast.makeText(mContext, "Payment successful!", Toast.LENGTH_LONG);
+                        Toast toast = Toast.makeText(mContext, "Payment successful! " + transactionCode, Toast.LENGTH_LONG);
                         toast.setGravity(Gravity.CENTER,0,0);
                         toast.show();
                     }else{

@@ -8,7 +8,7 @@ import android.graphics.Bitmap;
 
 public abstract class SecuXPaymentManagerCallback {
 
-    public void paymentDone(final boolean ret, final String errorMsg){
+    public void paymentDone(final boolean ret, final String transactionCode, final String errorMsg){
 
     }
 
