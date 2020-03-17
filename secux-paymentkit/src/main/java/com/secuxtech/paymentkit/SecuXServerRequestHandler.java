@@ -16,6 +16,7 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
     static final String adminLoginUrl = baseURL + "/api/Admin/Login";
     static final String registerUrl = baseURL + "/api/Consumer/Register";
     static final String userLoginUrl = baseURL + "/api/Consumer/Login";
+    static final String changePwdUrl = baseURL + "/api/Consumer/ChangePassword";
     static final String transferUrl = baseURL + "/api/Consumer/Transfer";
     static final String balanceUrl = baseURL + "/api/Consumer/GetAccountBalance";
     static final String balanceListUrl = baseURL + "/api/Consumer/GetAccountBalanceList";
@@ -74,6 +75,30 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
 
         }catch (Exception e){
             Log.e(TAG, e.getMessage());
+            return new Pair<>(SecuXRequestFailed, e.getLocalizedMessage());
+        }
+    }
+
+    public Pair<Integer, String> changePassword(String oldPwd, String newPwd){
+        Log.i(TAG, "changePassword");
+
+        try{
+            JSONObject param = new JSONObject();
+            param.put("password", oldPwd);
+            param.put("newPassword", newPwd);
+            Pair<Integer, String> response = this.processPostRequest(changePwdUrl, param, mToken);
+            if (response.first==SecuXRequestOK){
+                //JSONObject responseJson = new JSONObject(response.second);
+                //String token = responseJson.getString("token");
+                //mToken = token;
+            }
+
+            Log.i(TAG, response.second);
+            return response;
+
+        }catch (Exception e){
+            Log.e(TAG, e.getMessage());
+
             return new Pair<>(SecuXRequestFailed, e.getLocalizedMessage());
         }
     }

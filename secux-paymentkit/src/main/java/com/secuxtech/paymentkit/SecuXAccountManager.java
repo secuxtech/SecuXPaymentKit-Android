@@ -58,6 +58,18 @@ public class SecuXAccountManager {
                 String coinType = responseJson.getString("coinType");
                 String token = responseJson.getString("symbol");
 
+                if (responseJson.getString("name")!=null){
+                    userAccount.mAlias = responseJson.getString("name");
+                }
+
+                if (responseJson.getString("email")!=null){
+                    userAccount.mEmail = responseJson.getString("email");
+                }
+
+                if (responseJson.getString("tel")!=null){
+                    userAccount.mPhoneNum = responseJson.getString("tel");
+                }
+
                 BigDecimal balance = new BigDecimal(responseJson.getString("balance"));
                 BigDecimal formattedBalance = new BigDecimal(responseJson.getString("formattedBalance"));
                 BigDecimal usdBlance = new BigDecimal(responseJson.getString("balance_usd"));
@@ -77,6 +89,10 @@ public class SecuXAccountManager {
         }
 
         return response;
+    }
+
+    public Pair<Integer, String> changePassword(String oldPwd, String newPwd) {
+        return mSecuXSvrReqHandler.changePassword(oldPwd, newPwd);
     }
 
     public Pair<Integer, String> getAccountBalance(SecuXUserAccount userAccount, String coinType, String token){

@@ -66,6 +66,9 @@ public class MainActivity extends AppCompatActivity {
                 ret = mAccountManager.loginUserAccount(mAccount);
 
                 if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
+
+                    //ret = mAccountManager.changePassword("12345678", "12345678");
+
                     //Get account all balance
                     ret = mAccountManager.getAccountBalance(mAccount);
                     if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
@@ -215,9 +218,6 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     if (ret){
-
-
-
                         Toast toast = Toast.makeText(mContext, "Payment successful! " + transactionCode, Toast.LENGTH_LONG);
                         toast.setGravity(Gravity.CENTER,0,0);
                         toast.show();
