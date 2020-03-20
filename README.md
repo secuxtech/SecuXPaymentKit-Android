@@ -19,19 +19,19 @@ allprojects {
 
 ```java
 dependencies {
-    implementation 'com.github.secuxtech:secux-paymentkit-android:1.0.9'
+    implementation 'com.github.secuxtech:secux-paymentkit-android:1.2.8'
 }
 ```
 
-### Add dependency secux-peripheralkit-1.0.0.aar
+### Add dependency secux-paymentdevicekit.aar
 
 Download the [secux-peripheralkit-1.0.0.aar](https://github.com/secuxtech/secux-peripheralkit-android/tree/master/repository/com/secuxtech/secux-peripheralkit/1.0.0)
 
-Copy the secux-peripheralkit-1.0.0.aar to ~/app/libs
+Copy the secux-paymentdevicekit.aar to ~/app/libs
 
 Add dependency
 ```java
-implementation fileTree(dir: 'libs', include: ['*.aar'])
+implementation fileTree(dir: 'libs', include: ['secux-paymentdevicekit.aar'])
 ```
 
 ### Add bluetooth privacy permissions
@@ -60,66 +60,96 @@ Request permission
 import com.secuxtech.paymentkit.*;
 ```
 
-### Use SecuXAccountManager to get account balance and history
+### Use SecuXAccountManager to do account operations
+
+Must hava a user account to use the SecuX payment system. After successfully login the user account, the login session shall be validated for 30 minutes. If login session is timeout, relogin is required.
 
 ```java
 
 private SecuXAccountManager mAccountManager = new SecuXAccountManager();
-private SecuXAccount mAccount;
 
-mAccount = new SecuXAccount("Alice-Libra", SecuXCoinType.LBR, "", "XXXX", "");
+```
 
-Map<String, Double> coinRate = mAccountManager.getCoinUSDRate();
-SecuXAccountBalance balance = new SecuXAccountBalance();
-if (mAccountManager.getAccountBalance(mAccount, balance)){
-    Double usdBalance = balance.mUSDBalance;
-    if (balance.mUSDBalance==0 && coinRate!=null && coinRate.containsKey(mAccount.mCoinType)){
-        usdBalance = balance.mFormatedBalance * coinRate.get(mAccount.mCoinType);
-    }
+* User account registration
 
-    Log.i("secux-paymentkit-exp",
-            "getAccountBalance done. balance= " + String.valueOf(balance.mFormatedBalance) + ", usdBalance=" + String.valueOf(usdBalance));
+```java
+SecuXUserAccount newAccount = new SecuXUserAccount("xxxxx", "+886-123456789", 
+                                                   "12345678");
+
+Pair<Integer, String> ret = mAccountManager.registerUserAccount(newAccount);
+if (ret.first==SecuXServerRequestHandler.SecuXRequestOK) {
+    showMessageInMain("Account registration successful!");
+}else {
+    showMessageInMain("registration failed! Error: " + ret.second);
+}
+```
+
+* User account login
+
+```java
+SecuXUserAccount account = new SecuXUserAccount("maochuntest9@secuxtech.com", "", 
+                                                "12345678");
+
+Pair<Integer, String> ret = mAccountManager.loginUserAccount(mAccount);
+if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
+    showMessageInMain("Login successful!");
 }else{
-    Log.i("secux-paymentkit-exp", "get account balance failed!");
+    showMessageInMain("Login failed! Error: " + ret.second);
 }
+
 ```
-boolean getAccountBalance(SecuXAccount account, SecuXAccountBalance balance) output SecuXAccountBalance object
+
+* Get all coin/token balance
 
 ```java
-public class SecuXAccountBalance {
+ret = mAccountManager.getAccountBalance(mAccount);
+if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
+    for(int i=0; i<mAccount.mCoinAccountArr.size(); i++){
+        SecuXCoinAccount coinAcc = mAccount.mCoinAccountArr.get(i);
 
-    public Double mBalance = Double.valueOf(0);
-    public Double mFormatedBalance = Double.valueOf(0);
-    public Double mUSDBalance = Double.valueOf(0);
+        Set<Map.Entry<String, SecuXCoinTokenBalance>> entrySet = coinAcc.mTokenBalanceMap.entrySet();
+        for (Map.Entry<String, SecuXCoinTokenBalance> entry: entrySet){
+            String symbol = entry.getKey();
+            SecuXCoinTokenBalance balance = entry.getValue();
+
+            Log.i(TAG, "Symbol=" + symbol + " balance=" + balance.mFormattedBalance.toString() + " usdBalance=" + balance.mUSDBalance.toString());
+        }
+    }
+}else if (ret.first== SecuXServerRequestHandler.SecuXRequestUnauthorized){
+    //Need relogin
+}else{
+    showMessageInMain("Get account balance failed! Error: " + ret.second);
 }
 ```
-boolean getAccountHistory(SecuXAccount account, ArrayList<SecuXAccountHisotry> historyList) output SecuXAccountHistory object array
+
+* Get a specified coin/token balance
 
 ```java
-public class SecuXAccountHisotry {
-    public String address = "";
-    public String tx_type = "";
-    public Double amount = Double.valueOf(0);
-    public String amount_symbol = "";
-    public Double formatted_amount = Double.valueOf(0);
-    public Double amount_usd = Double.valueOf(0);
-    public String timestamp = "";
-    public String detailslUrl = "";
-}
- ```
+ret = mAccountManager.getAccountBalance(mAccount, "DCT", "SPC");
+if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
+    SecuXCoinAccount coinAcc = mAccount.getCoinAccount("DCT");
+    SecuXCoinTokenBalance balance = coinAcc.getBalance("SPC");
+    Log.i(TAG, "balance=" +  balance.mFormattedBalance.toString() + " usdBalance=" + balance.mUSDBalance.toString());
 
-### Use SecuXPaymentManager to get store info. and do payment
+}else if (ret.first== SecuXServerRequestHandler.SecuXRequestUnauthorized){
+    //Need relogin
+}else{
+    showMessageInMain("Get account balance failed! Error: " + ret.second);
+}
+```
+
+### Use SecuXPaymentManager to do payment operations
 
 * Implement SecuXPaymentManagerCallback functions
 
-    **public void paymentDone(final boolean ret, final String errorMsg)** 
+    **public void paymentDone(final boolean ret, final String transactionCode, final String errorMsg)**
     Called when payment is completed. Returns payment result and error message.
         
     **public void updatePaymentStatus(final String status)**
     Called when payment status is changed. Payment status are: "Device connecting...", "DCT transferring..." and "Device verifying..."
        
-    **public void getStoreInfoDone(final boolean ret, final String storeName, final Bitmap storeLogo)**   
-    Called when get store information is completed. Returns store name and store logo.
+    **public void getStoreInfoDone(final boolean ret, final String storeInfo, final Bitmap storeLogo)**   
+    Called when get store information is completed. Returns store info. string and store logo.
       
     
 ```java
@@ -128,7 +158,7 @@ public class SecuXAccountHisotry {
  private SecuXPaymentManagerCallback mPaymentMgrCallback = new SecuXPaymentManagerCallback() {
 
         @Override
-        public void paymentDone(final boolean ret, final String errorMsg) {
+        public void paymentDone(final boolean ret, final String transactionCode, final String errorMsg) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -143,7 +173,6 @@ public class SecuXAccountHisotry {
                     }
                 }
             });
-
         }
 
         @Override
@@ -152,16 +181,18 @@ public class SecuXAccountHisotry {
         }
 
         @Override
-        public void getStoreInfoDone(final boolean ret, final String storeName, final Bitmap storeLogo){
+        public void getStoreInfoDone(final boolean ret, final String storeInfo, final Bitmap storeLogo){
             Log.i("secux-paymentkit-exp", "Get store info. done ret=" + String.valueOf(ret) + ",name=" + storeName);
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (ret){
-                        final String name = storeName;
-
-                        //Use SecuXManager to do payment, must call in main thread
-                        mPaymentManager.doPayment(mContext, mAccount, name, mPaymentInfo);
+                        String storeName = "";
+                        try{
+                            JSONObject storeInfoJson = new JSONObject(mStoreInfo);
+                            storeName = storeInfoJson.getString("name");
+                        }catch (Exception e){
+                        }
 
                     }else{
                         Toast toast = Toast.makeText(mContext, "Get store info. failed!", Toast.LENGTH_LONG);
@@ -170,7 +201,6 @@ public class SecuXAccountHisotry {
                     }
                 }
             });
-
         }
 
     };
@@ -179,14 +209,40 @@ public class SecuXAccountHisotry {
 * Get store information
 
 ```java
- mPaymentManager.getStoreInfo(getBaseContext(), mPaymentInfo);
+mPaymentManager.getStoreInfo("f962639145992d7a710d33dcca503575eb85d759");
 ```
 
 * Do payment
 
 ```java
- String mPaymentInfo = "{\"amount\":\"11\", \"coinType\":\"LBR\", \"deviceID\":\"4ab10000726b\"}";
- mPaymentManager.doPayment(mContext, mAccount, name, mPaymentInfo);
+ String mPaymentInfo = "{\"amount\":\"7\", \"coinType\":\"DCT:SPC\",\"deviceIDhash\":\"f962639145992d7a710d33dcca503575eb85d759\"}";
+
+ret = mPaymentManager.getDeviceInfo(mPaymentInfo);
+if (ret.first==SecuXServerRequestHandler.SecuXRequestOK) {
+
+    mPaymentManager.doPayment(mContext, mAccount, storeInfo, mPaymentInfo);
+
+}
+```
+
+* Get payment history
+
+```java
+ArrayList<SecuXPaymentHistory> payHisArr = new ArrayList<>();
+int idx = 1;
+int hisItemCount = 10;
+while (true){
+    int preHisItemCount = payHisArr.size();
+    ret = mPaymentManager.getPaymentHistory("SPC", idx, hisItemCount, payHisArr);
+    if (ret.first!=SecuXServerRequestHandler.SecuXRequestOK){
+        showMessageInMain("Get payment history failed!");
+        break;
+    }else if (payHisArr.size() - preHisItemCount < hisItemCount){
+        Log.i(TAG, "Get all history items");
+        break;
+    }
+    idx += 1;
+}
 ```
 
 ## Demo APP
