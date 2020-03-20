@@ -222,6 +222,7 @@ public class SecuXPaymentManagerBase {
 
         Log.i(TAG, SystemClock.uptimeMillis() + " sendInfoToDevice amount=" + mPaymentInfo.mAmount);
 
+        handlePaymentStatus(mPaymentInfo.mToken + " transferring...");
         Pair<Integer, String> payRet = mSecuXSvrReqHandler.doPayment(mAccount.mAccountName, mPaymentDevConfigInfo.mName, mPaymentInfo);
         if (payRet.first == SecuXServerRequestHandler.SecuXRequestUnauthorized){
             handleAccountUnauthorized();
@@ -231,7 +232,6 @@ public class SecuXPaymentManagerBase {
             return;
         }
 
-        handlePaymentStatus(mPaymentInfo.mToken + " transferring...");
         try {
 
             JSONObject payRetJson = new JSONObject(payRet.second);
