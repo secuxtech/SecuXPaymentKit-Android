@@ -12,7 +12,7 @@ import org.json.JSONObject;
 
 public class SecuXServerRequestHandler extends RestRequestHandler {
 
-    static final String baseURL = "https://pmsweb-test.secux.io";
+    static String baseURL = "https://pmsweb-test.secux.io";
     static final String adminLoginUrl = baseURL + "/api/Admin/Login";
     static final String registerUrl = baseURL + "/api/Consumer/Register";
     static final String userLoginUrl = baseURL + "/api/Consumer/Login";

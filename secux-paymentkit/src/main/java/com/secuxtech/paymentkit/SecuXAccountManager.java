@@ -19,12 +19,18 @@ public class SecuXAccountManager {
     private static String TAG = "secux-paymentkit";
     private SecuXServerRequestHandler mSecuXSvrReqHandler = new SecuXServerRequestHandler();
 
+    public void setBaseServer(String url){
+        SecuXServerRequestHandler.baseURL = url;
+    }
+
     public Pair<Integer, String> registerUserAccount(SecuXUserAccount userAccount){
         Pair<Integer, String> response = mSecuXSvrReqHandler.userRegister(userAccount.mAccountName, userAccount.mPassword, userAccount.mEmail, userAccount.mAlias, userAccount.mPhoneNum);
 
         if (response.first==SecuXServerRequestHandler.SecuXRequestOK){
             try{
                 JSONObject responseJson = new JSONObject(response.second);
+
+                /*
                 String coinType = responseJson.getString("coinType");
                 String token = responseJson.getString("symbol");
 
@@ -39,7 +45,7 @@ public class SecuXAccountManager {
                 SecuXCoinAccount coinAccount = new SecuXCoinAccount(coinType, tokenBalanceMap);
 
                 userAccount.mCoinAccountArr.add(coinAccount);
-
+                */
                 return new Pair<>(SecuXServerRequestHandler.SecuXRequestOK, "");
 
             }catch (Exception e){
@@ -55,8 +61,8 @@ public class SecuXAccountManager {
         if (response.first==SecuXServerRequestHandler.SecuXRequestOK) {
             try {
                 JSONObject responseJson = new JSONObject(response.second);
-                String coinType = responseJson.getString("coinType");
-                String token = responseJson.getString("symbol");
+                //String coinType = responseJson.getString("coinType");
+                //String token = responseJson.getString("symbol");
 
                 if (responseJson.getString("name")!=null){
                     userAccount.mAlias = responseJson.getString("name");
@@ -70,6 +76,11 @@ public class SecuXAccountManager {
                     userAccount.mPhoneNum = responseJson.getString("tel");
                 }
 
+                if (responseJson.getString("userType")!=null){
+                    userAccount.mUserType = responseJson.getString("userType");
+                }
+
+                /*
                 BigDecimal balance = new BigDecimal(responseJson.getString("balance"));
                 BigDecimal formattedBalance = new BigDecimal(responseJson.getString("formattedBalance"));
                 BigDecimal usdBlance = new BigDecimal(responseJson.getString("balance_usd"));
@@ -81,6 +92,8 @@ public class SecuXAccountManager {
                 SecuXCoinAccount coinAccount = new SecuXCoinAccount(coinType, tokenBalanceMap);
 
                 userAccount.mCoinAccountArr.add(coinAccount);
+
+                 */
                 return new Pair<>(SecuXServerRequestHandler.SecuXRequestOK, "");
 
             } catch (Exception e) {
