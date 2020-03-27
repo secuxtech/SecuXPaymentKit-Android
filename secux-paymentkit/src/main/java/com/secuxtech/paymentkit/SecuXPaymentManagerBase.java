@@ -39,6 +39,7 @@ import com.secuxtech.paymentdevicekit.PaymentPeripheralManager;
 import com.secuxtech.paymentdevicekit.SecuXBLEManager;
 
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -75,6 +76,7 @@ public class SecuXPaymentManagerBase {
 
     private String mStoreInfo = "";
     private Bitmap mStoreLogo = null;
+    private ArrayList<String> mStoreSupportedCoinTokenArr = new ArrayList<>();
 
     SecuXPaymentManagerBase(){
         Log.i(TAG, "SecuXPaymentManagerBase");

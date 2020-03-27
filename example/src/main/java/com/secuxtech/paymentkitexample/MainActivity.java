@@ -50,11 +50,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 //User account operations
-                mAccount = new SecuXUserAccount("maochuntest9@secuxtech.com", "0975123456", "12345678");
+                mAccount = new SecuXUserAccount("maochuntest9@secuxtech.com", "12345678");
 
                 //Account registration
-                SecuXUserAccount newAccount = new SecuXUserAccount("maochuntest6@secuxtech.com", "0975123456", "12345678");
-                Pair<Integer, String> ret = mAccountManager.registerUserAccount(newAccount);
+                SecuXUserAccount newAccount = new SecuXUserAccount("maochuntest25@secuxtech.com", "12345678");
+                Pair<Integer, String> ret = mAccountManager.registerUserAccount(newAccount, "DCT", "SPC");
                 if (ret.first==SecuXServerRequestHandler.SecuXRequestOK) {
                     showMessageInMain("Account registration successful!");
                 }else {
@@ -70,37 +70,40 @@ public class MainActivity extends AppCompatActivity {
                     //ret = mAccountManager.changePassword("12345678", "12345678");
 
                     //Get account all balance
-                    ret = mAccountManager.getAccountBalance(mAccount);
+                    ret = mAccountManager.getCoinAccountList(mAccount);
                     if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
                         for(int i=0; i<mAccount.mCoinAccountArr.size(); i++){
                             SecuXCoinAccount coinAcc = mAccount.mCoinAccountArr.get(i);
 
                             Set<Map.Entry<String, SecuXCoinTokenBalance>> entrySet = coinAcc.mTokenBalanceMap.entrySet();
                             for (Map.Entry<String, SecuXCoinTokenBalance> entry: entrySet){
-                                String symbol = entry.getKey();
-                                SecuXCoinTokenBalance balance = entry.getValue();
+                                String token = entry.getKey();
+                                //SecuXCoinTokenBalance balance = entry.getValue();
 
-                                Log.i(TAG, "Symbol=" + symbol + " balance=" + balance.mFormattedBalance.toString() + " usdBalance=" + balance.mUSDBalance.toString());
+                                //Get account balance for a specified coin and token
+                                ret = mAccountManager.getAccountBalance(mAccount, coinAcc.mCoinType, token);
+                                if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
+                                    //SecuXCoinAccount coinAcc = mAccount.getCoinAccount("DCT");
+                                    SecuXCoinTokenBalance balance = coinAcc.getBalance(token);
+
+                                    Log.i(TAG, "Token=" + token + " balance=" + balance.mFormattedBalance.toString() + " usdBalance=" + balance.mUSDBalance.toString());
+
+                                }else{
+                                    showMessageInMain("Get account balance failed! Error: " + ret.second);
+                                }
+
+
                             }
                         }
                     }else{
                         showMessageInMain("Get account balance failed! Error: " + ret.second);
                     }
 
-                    //Get account balance for a specified coin and token
-                    ret = mAccountManager.getAccountBalance(mAccount, "DCT", "SPC");
-                    if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
-                        SecuXCoinAccount coinAcc = mAccount.getCoinAccount("DCT");
-                        SecuXCoinTokenBalance balance = coinAcc.getBalance("SPC");
-                        Log.i(TAG, "balance=" +  balance.mFormattedBalance.toString() + " usdBalance=" + balance.mUSDBalance.toString());
 
-                    }else{
-                        showMessageInMain("Get account balance failed! Error: " + ret.second);
-                    }
 
                     //Account transfer
                     SecuXTransferResult transRet = new SecuXTransferResult();
-                    ret = mAccountManager.doTransfer(mAccount, "DCT", "SPC", "SFC", "10.5", "maochuntest2", transRet);
+                    ret = mAccountManager.doTransfer("DCT", "SPC", "SFC", "10.5", "maochuntest2", transRet);
                     if (ret.first==SecuXServerRequestHandler.SecuXRequestOK){
                         Log.i(TAG, "Transfer done. TxID=" + transRet.mTxID + " url="+transRet.mDetailsUrl);
                     }else{
@@ -114,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
 
                     while (true){
                         int preHisItemCount = historyArr.size();
-                        ret = mAccountManager.getTransferHistory(mAccount, "DCT", "SPC", idx, historyCount, historyArr);
+                        ret = mAccountManager.getTransferHistory("DCT", "SPC", idx, historyCount, historyArr);
 
                         if (ret.first!=SecuXServerRequestHandler.SecuXRequestOK){
                             showMessageInMain("Get account transfer history failed! Error: " + ret.second);
@@ -167,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
                     mPaymentManager.setSecuXPaymentManagerCallback(mPaymentMgrCallback);
 
                     //User SecuXPaymentManager to get valid payment info. from the QRCode string;
-                    ret = mPaymentManager.getDeviceInfo("{\"amount\":\"12\", \"coinType\":\"DCT\", \"token\":\"SPC\",\"deviceIDhash\":\"04793D374185C2167A420D250FFF93F05156350C\"}");
+                    ret = mPaymentManager.getDeviceInfo("{\"amount\":\"12\", \"coinType\":\"DCT\", \"token\":\"SPC\",\"deviceIDhash\":\"f962639145992d7a710d33dcca503575eb85d759\"}");
                     if (ret.first==SecuXServerRequestHandler.SecuXRequestOK) {
 
                         try{

@@ -206,7 +206,10 @@ class RestRequestHandler {
     }
 
     public Pair<Integer, String> processPostRequest(String path, JSONObject param, String token, Integer timeout) {
-        String paramStr = param.toString();
+        String paramStr = "{}";
+        if (param != null) {
+            paramStr = param.toString();
+        }
         Integer result = SecuXRequestFailed;
         String response = "";
         try {

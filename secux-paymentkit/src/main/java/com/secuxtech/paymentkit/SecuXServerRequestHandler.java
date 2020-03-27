@@ -12,7 +12,7 @@ import org.json.JSONObject;
 
 public class SecuXServerRequestHandler extends RestRequestHandler {
 
-    static String baseURL = "https://pmsweb-test.secux.io";
+    static String baseURL = "https://pmsweb-sandbox.secuxtech.com";
     static final String adminLoginUrl = baseURL + "/api/Admin/Login";
     static final String registerUrl = baseURL + "/api/Consumer/Register";
     static final String userLoginUrl = baseURL + "/api/Consumer/Login";
@@ -25,6 +25,8 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
     static final String getStoreUrl = baseURL + "/api/Terminal/GetStore";
     static final String transferHistoryUrl = baseURL + "/api/Consumer/GetTxHistory";
     static final String getDeviceInfoUrl = baseURL + "/api/Terminal/GetDeviceInfo";
+    static final String getSupportedSymbolUrl = baseURL + "/api/Terminal/GetSupportedSymbol";
+    static final String getChainAccountListUrl = baseURL + "/api/Consumer/GetChainAccountList";
 
     private static String mToken = "";
 
@@ -49,26 +51,27 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
         return "";
     }
 
-    public Pair<Integer, String> userRegister(String account, String password, String email, String alias, String phoneNum){
+    public Pair<Integer, String> userRegister(SecuXUserAccount userAccount, String coinType, String token){
         Log.i(TAG, "userRegister");
-        String token = getAdminToken();
+        String adminToken = getAdminToken();
 
-        String response = "";
-        if (token.length()==0){
+        if (adminToken.length()==0){
             Log.e(TAG, "No token");
             return new Pair<>(SecuXRequestFailed, "No token");
         }
 
         try{
             JSONObject param = new JSONObject();
-            param.put("account", account);
-            param.put("password", password);
-            param.put("email", email);
-            param.put("alias", alias);
-            param.put("tel", phoneNum);
+            param.put("account", userAccount.mAccountName);
+            param.put("password", userAccount.mPassword);
+            param.put("email", userAccount.mEmail);
+            param.put("alias", userAccount.mAlias);
+            param.put("tel", userAccount.mPhoneNum);
+            param.put("coinType", coinType);
+            param.put("symbol", token);
             param.put("optional", "{}");
 
-            Pair<Integer, String> result = this.processPostRequest(registerUrl, param, token, 30000);
+            Pair<Integer, String> result = this.processPostRequest(registerUrl, param, adminToken, 30000);
 
             Log.i(TAG, result.second);
             return result;
@@ -127,8 +130,25 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
         }
     }
 
-    public Pair<Integer, String> getAccountBalance(String account, String cointype, String token){
-        Log.i(TAG, "getAccountBalance " + account + " " + cointype + " " + token);
+    public Pair<Integer, String> getSupportedCoinTokens(){
+        Log.i(TAG, "getSupportedCoinTokens");
+
+        return this.processPostRequest(getSupportedSymbolUrl);
+    }
+
+    public Pair<Integer, String> getChainAccountList(){
+        Log.i(TAG, "getChainAccountList");
+
+        if (mToken.length()==0){
+            Log.e(TAG, "No token");
+            return new Pair<>(SecuXRequestFailed, "No token");
+        }
+
+        return this.processPostRequest(getChainAccountListUrl, null, mToken);
+    }
+
+    public Pair<Integer, String> getAccountBalance(String cointype, String token){
+        Log.i(TAG, "getAccountBalance " + cointype + " " + token);
 
         if (mToken.length()==0){
             Log.e(TAG, "No token");
@@ -151,8 +171,8 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
         }
     }
 
-    public Pair<Integer, String> getAccountBalance(String account){
-        Log.i(TAG, "getAccountBalance " + account);
+    public Pair<Integer, String> getAccountBalance(){
+        Log.i(TAG, "getAccountBalance ");
 
         if (mToken.length()==0){
             Log.e(TAG, "No token");
@@ -223,7 +243,7 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
         }
     }
 
-    public Pair<Integer, String> doTransfer(String cointype, String token, String feesymbol, String account, String receiver, String amount){
+    public Pair<Integer, String> doTransfer(String cointype, String token, String feesymbol, String receiver, String amount){
         Log.i(TAG, "doTransfer");
         if (mToken.length()==0){
             Log.e(TAG, "No token");
