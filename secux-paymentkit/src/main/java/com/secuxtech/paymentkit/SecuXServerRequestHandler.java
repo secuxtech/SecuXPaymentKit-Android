@@ -171,6 +171,7 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
         }
     }
 
+    /*
     public Pair<Integer, String> getAccountBalance(){
         Log.i(TAG, "getAccountBalance ");
 
@@ -193,6 +194,8 @@ public class SecuXServerRequestHandler extends RestRequestHandler {
         }
     }
 
+
+     */
     public Pair<Integer, String> getStoreInfo(String devID){
         Log.i(TAG, "getStoreInfo");
 
