@@ -202,6 +202,7 @@ public class SecuXAccountManager {
         return response;
     }
 
+    /*
     public Pair<Integer, String>  getAccountBalance(SecuXUserAccount userAccount){
         Pair<Integer, String>  response = this.mSecuXSvrReqHandler.getAccountBalance();
         if (response.first==SecuXServerRequestHandler.SecuXRequestOK) {
@@ -242,7 +243,7 @@ public class SecuXAccountManager {
         }
         return response;
     }
-
+    */
     public Pair<Integer, String> doTransfer(String cointype, String token, String feeSymbol,
                                             String amount, String receiver, SecuXTransferResult transRet){
 
